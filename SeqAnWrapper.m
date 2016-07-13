@@ -42,7 +42,7 @@ stats = zeros(numDays,numChans,4);
 count = 1;
 for ii = 1:numDays
     [Statistic,Parameters,stdErrors,estCurve,stimLength] = SequenceAnalysis(...
-        AnimalName,Days(ii));
+        AnimalName,Days(ii),Chans,ii);
     stats(count,:,:) = Statistic;
     count = count+1;
 end

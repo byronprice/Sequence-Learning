@@ -1,4 +1,4 @@
-function [Statistic,Parameters,stdErrors,estCurve,stimLength] = SequenceAnalysis(AnimalName,Date,Chans)
+function [Statistic,Parameters,stdErrors,estCurve,stimLength] = SequenceAnalysis(AnimalName,Date,Chans,Day)
 %SequenceAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
@@ -11,14 +11,20 @@ function [Statistic,Parameters,stdErrors,estCurve,stimLength] = SequenceAnalysis
 %INPUT: AnimalName - unique ID for the animal, e.g. 12340.  The first four
 %        digits are its cage code and the last is the value of the individual
 %        animal (starting at 0 and increasing)
-%       Day - experimental date, e.g. 20160711 for July 11, 2016, always
+%       Date - experimental date, e.g. 20160711 for July 11, 2016, always
 %        use two digits for days and months, i.e. June is 06, the ninth day
 %        of June is 09
 %
 %        OPTIONAL
 %       Chans - a vector of channel numbers used to record neural activity,
 %        defaults to channels 6 and 8, e.g. [6,8]
-%OUTPUT:
+%       Day - which day of the experiment as a number
+%        (they usually run 5 days), e.g. 1
+%OUTPUT: Statistic -
+%        Parameters - 
+%        stdErrors - 
+%        estCurve - 
+%        stimLength -
 %
 %Created: 2016/07/11
 % Byron Price
@@ -40,6 +46,9 @@ load(EphysFileName)
 
 if nargin < 3
     Chans = [6,8];
+    Day = 1;
+elseif nargin < 4
+    Day = 1;
 end
 
 stimTime = 0.167;
@@ -124,7 +133,7 @@ for ii=1:numChans
 %     uq = [];
     for zz = 1:numElements
         meanRes = [meanRes,mean(squeeze(Response(ii,:,zz,:)),1)];
-        stdRes = [stdRes,std(squeeze(Response(ii,:,zz,:)),0,1)]
+        stdRes = [stdRes,std(squeeze(Response(ii,:,zz,:)),0,1)];
 %         lq = [lq,quantile(squeeze(Response(ii,:,zz,:)),alpha/2,1)];
 %         uq  = [uq,quantile(squeeze(Response(ii,:,zz,:)),1-alpha/2,1)];
     end
@@ -133,9 +142,9 @@ for ii=1:numChans
     stdRes = 2*stdRes./sqrt(numStimuli);
     figure();
     boundedline(1:stimLength*numElements,meanRes,stdRes,'alpha');
-    title(sprintf('Mean VEP with Approximate 95%% Confidence Interval: Channel %d',ii));
+    title(sprintf('Mean VEP with Approximate 95%% Confidence Interval: Channel %d, Day %d',ii,Day));
     ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
-    axis([0 stimLength*numElements -500 500]);
+    axis([0 stimLength*numElements -250 250]);
 end
 
 numBases = 30;
@@ -171,9 +180,9 @@ for ii=1:numChans
     estCurve(ii,:,1) = yhat; estCurve(ii,:,2) = lBound; estCurve(ii,:,3) = uBound;
     x = 1:(stimLength*numElements);
     figure();boundedline(x,yhat,[lBound,uBound],'alpha');
-    title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d',numBases,ii));
+    title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,ii,Day));
     ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
-    axis([0 stimLength*numElements -500 500]);
+    axis([0 stimLength*numElements -250 250]);
 %     figure();boundedline(1:numBases,b,2*stats.se,'alpha');
 end
 end
