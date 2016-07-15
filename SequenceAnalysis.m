@@ -1,4 +1,4 @@
-function [Statistic,Parameters,stdErrors,estCurve,stimLength] = SequenceAnalysis(AnimalName,Date,Chans,Day)
+function [Statistic,Response] = SequenceAnalysis(AnimalName,Date,statFun,Chans,Day)
 %SequenceAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
@@ -45,9 +45,13 @@ EphysFileName = strcat(EphysFileName,'.mat');
 load(EphysFileName)
 
 if nargin < 3
+    statFun = @(x) abs(min(x));
     Chans = [6,8];
     Day = 1;
 elseif nargin < 4
+    Chans = [6,8];
+    Day = 1;
+elseif nargin < 5
     Day = 1;
 end
 
@@ -60,6 +64,7 @@ dataLength = length(allad{1,strobeStart+Chans(1)-1});
 numChans = length(Chans);
 ChanData = zeros(dataLength,numChans);
 preAmpGain = 1/1000;
+
 for ii=1:numChans
     voltage = ((allad{1,strobeStart+Chans(ii)-1}).*SlowPeakV)./(0.5*(2^SlowADResBits)*adgains(strobeStart+Chans(ii)-1)*preAmpGain);
     n = 30;
@@ -91,10 +96,9 @@ numStimuli = length(elementStrobes)/numElements;
 stimLength = round(stimTime*sampleFreq); % 167ms per sequence element
 
 Response = zeros(numChans,numStimuli,numElements,stimLength);
-Statistic = zeros(numChans,4);
+Statistic = zeros(numChans,numElements,4);
 alpha = 0.05;
 for ii=1:numChans
-%     figure();
     for jj=1:numStimuli
         check = (jj-1)*numElements+1:jj*numElements;
         for kk=1:numElements
@@ -102,23 +106,23 @@ for ii=1:numChans
             [~,index] = min(abs(timeStamps-stimOnset));
             temp = ChanData(index:index+stimLength-1,ii);
             Response(ii,jj,kk,:) = temp;
-%             if kk == 1
-%                 subplot(20,10,jj);plot(temp);axis([0 200 -1000 1000]);
-%             end
         end
         clear check temp;
     end
     
-    n = 5000;
-    Tboot = zeros(n,1);
-    for jj=1:n
-        indeces = random('Discrete Uniform',numStimuli,[numStimuli,1]);
-        temp = squeeze(Response(ii,:,1,:));temp = temp(indeces,:);
-        meanResponse = mean(temp,1);
-        Tboot(jj) = min(meanResponse); % or max-min
+    % BOOTSTRAP ERROR ON TEST STATISTIC
+    for jj=1:numElements
+        n = 5000;
+        Tboot = zeros(n,1);
+        for kk=1:n
+            indeces = random('Discrete Uniform',numStimuli,[numStimuli,1]);
+            temp = squeeze(Response(ii,:,jj,:));temp = temp(indeces,:);
+            meanResponse = mean(temp,1);
+            Tboot(kk) = statFun(meanResponse); 
+        end
+        Statistic(ii,jj,1) = statFun(mean(squeeze(Response(ii,:,jj,:)),1));Statistic(ii,jj,2) = std(Tboot);
+        Statistic(ii,jj,3) = quantile(Tboot,alpha/2);Statistic(ii,jj,4) = quantile(Tboot,1-alpha/2);
     end
-    Statistic(ii,1) = mean(Tboot);Statistic(ii,2) = std(Tboot);
-    Statistic(ii,3) = quantile(Tboot,alpha/2);Statistic(ii,4) = quantile(Tboot,1-alpha/2);
 %     figure();
 %     for ll=1:numElements
 %         subplot(ceil(numElements/2),2,ll);histogram(squeeze(Statistic(ii,:,ll)));
@@ -127,63 +131,8 @@ for ii=1:numChans
 %             sprintf('Test Statistic (\\muV) [max(LFP)-min(LFP) in the %0.2f seconds after sequence element onset]',stimTime));
 %     end
     
-    meanRes = [];
-    stdRes = [];
-%     lq = [];
-%     uq = [];
-    for zz = 1:numElements
-        meanRes = [meanRes,mean(squeeze(Response(ii,:,zz,:)),1)];
-        stdRes = [stdRes,std(squeeze(Response(ii,:,zz,:)),0,1)];
-%         lq = [lq,quantile(squeeze(Response(ii,:,zz,:)),alpha/2,1)];
-%         uq  = [uq,quantile(squeeze(Response(ii,:,zz,:)),1-alpha/2,1)];
-    end
-%     lq = meanRes-lq;
-%     uq = uq-meanRes; [lq',uq']
-    stdRes = 2*stdRes./sqrt(numStimuli);
-    figure();
-    boundedline(1:stimLength*numElements,meanRes,stdRes,'alpha');
-    title(sprintf('Mean VEP with Approximate 95%% Confidence Interval: Channel %d, Day %d',ii,Day));
-    ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
-    axis([0 stimLength*numElements -250 250]);
 end
 
-numBases = 30;
-Basis = zeros(stimLength*numElements,numBases);
-s = 15;
-% 50 bases and s = 10 works well, so does 30 and 15
-% Gaussian radial basis functions
-for ii=1:numBases
-    Basis(:,ii) = exp((-((1:stimLength*numElements)-stimLength*numElements*(ii-1)/numBases).^2)./(2*s^2));
-%     plot(Basis(:,ii));hold on;
-end
 
-Parameters = zeros(numChans,numBases);
-stdErrors = zeros(numChans,numBases);
-estCurve = zeros(numChans,stimLength*numElements,3);
-for ii=1:numChans
-    Y = zeros(stimLength*numStimuli*numElements,1);
-    BigBasis = [];
-    
-    for jj=1:numStimuli
-        for kk=1:numElements
-            indeces = (kk-1)*stimLength+1:kk*stimLength;
-            indeces = indeces+(jj-1)*stimLength*numElements;
-            Y(indeces) = squeeze(Response(ii,jj,kk,:));
-        end
-        BigBasis = [BigBasis;Basis];
-    end
-    
-    [b,~,stats] = glmfit(BigBasis,Y,'normal','constant','off');
-    [yhat,lBound,uBound] = glmval(b,Basis,'identity',stats,'confidence',1-alpha,'constant','off');
-    
-    Parameters(ii,:) = b; stdErrors(ii,:) = stats.se;
-    estCurve(ii,:,1) = yhat; estCurve(ii,:,2) = lBound; estCurve(ii,:,3) = uBound;
-    x = 1:(stimLength*numElements);
-    figure();boundedline(x,yhat,[lBound,uBound],'alpha');
-    title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,ii,Day));
-    ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
-    axis([0 stimLength*numElements -250 250]);
-%     figure();boundedline(1:numBases,b,2*stats.se,'alpha');
-end
 end
 
