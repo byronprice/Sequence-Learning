@@ -74,7 +74,7 @@ for ii=1:numChans
         stdRes = 2*stdRes./sqrt(numStimuli);
         subplot(plotRows,2,jj);
         boundedline(1:stimLength*numElements,meanRes,stdRes,'alpha');
-        title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',ii,jj));
+        title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',Chans(ii),jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
         axis([0 stimLength*numElements -250 250]);
     end
@@ -93,7 +93,7 @@ for ii=1:numChans
         subplot(plotRows,2,kk);
         errorbar(1:numDays,means(:,kk),...
             stds(:,kk),'LineWidth',2);
-        title(sprintf('Test Statistic (measure of VEP magnitude) with Bootstrap Standard Error for Channel %d, Element %d',ii,kk));
+        title(sprintf('Test Statistic (measure of VEP magnitude) with Bootstrap Standard Error for Channel %d, Element %d',Chans(ii),kk));
         ylabel('VEP Magnitude (\muV)');xlabel('Experimental Day');
         axis([0 numDays+1 0 300]);
     end
@@ -106,9 +106,9 @@ for ii=1:numChans
         W = (Stats{numDays}(ii,jj,1)-Stats{1}(ii,jj,1))/(sqrt(Stats{numDays}(ii,jj,2)^2+Stats{1}(ii,jj,2)^2));
         c = norminv(1-alpha,0,1);
         if abs(W) > c
-            display(sprintf('Wald Test for Channel %d,Element %d rejects null, mean VEP magnitude differs between first and last day',ii,jj));
+            display(sprintf('Wald Test for Channel %d,Element %d rejects null, mean VEP magnitude differs between first and last day',Chans(ii),jj));
         else
-            display(sprintf('Wald Test for Channel %d, Element %d retains null',ii,jj))
+            display(sprintf('Wald Test for Channel %d, Element %d retains null',Chans(ii),jj))
         end
     end
 end
@@ -149,7 +149,7 @@ for ii=1:numChans
         estCurve(ii,jj,:,1) = yhat; estCurve(ii,jj,:,2) = lBound; estCurve(ii,jj,:,3) = uBound;
         x = 1:(stimLength*numElements);
         subplot(plotRows,2,jj);boundedline(x,yhat,[lBound,uBound],'alpha');
-        title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,ii,jj));
+        title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,Chans(ii),jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
         axis([0 stimLength*numElements -250 250]);
         %     figure();boundedline(1:numBases,b,2*stats.se,'alpha');
