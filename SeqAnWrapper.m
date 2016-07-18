@@ -95,7 +95,7 @@ for ii=1:numChans
             stds(:,kk),'LineWidth',2);
         title(sprintf('Test Statistic (measure of VEP magnitude) with Bootstrap Standard Error for Channel %d, Element %d',ii,kk));
         ylabel('VEP Magnitude (\muV)');xlabel('Experimental Day');
-        axis([0 numDays+1 0 250]);
+        axis([0 numDays+1 0 300]);
     end
 end
 
