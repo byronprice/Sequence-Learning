@@ -19,12 +19,9 @@ function [] = SeqAnWrapper(AnimalName,firstDay,numDays,Chans)
 %
 %Created: 2016/07/12
 % Byron Price
-%Updated: 2016/07/13
+%Updated: 2016/07/19
 %  By: Byron Price
 
-if nargin < 4
-    Chans = [6,8];
-end
 Days = zeros(numDays,1);
 Days(1) = firstDay;
 firstDay = num2str(firstDay);
@@ -36,8 +33,6 @@ for ii=2:numDays
     Days(ii) = str2double(datestr(result,'yyyymmdd'));
 end
 
-numChans = length(Chans);
-
 %statFun = @(x) trapz(abs(x));
 %statFun = @(x) abs(min(x));
 statFun = @(x) max(x)-min(x);
@@ -46,8 +41,8 @@ Stats = cell(numDays,1);
 Responses = cell(numDays,1);
 count = 1;
 for ii = 1:numDays
-    [Statistic,Response] = SequenceAnalysis(...
-        AnimalName,Days(ii),statFun,Chans,ii);
+    [Statistic,Response,numChans] = SequenceAnalysis(...
+        AnimalName,Days(ii),statFun);
     Stats{ii} = Statistic;
     Responses{ii} = Response;
     count = count+1;
@@ -74,7 +69,7 @@ for ii=1:numChans
         stdRes = 2*stdRes./sqrt(numStimuli);
         subplot(plotRows,2,jj);
         boundedline(1:stimLength*numElements,meanRes,stdRes,'alpha');
-        title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',Chans(ii),jj));
+        title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',ii,jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
         axis([0 stimLength*numElements -250 250]);
     end
@@ -93,7 +88,7 @@ for ii=1:numChans
         subplot(plotRows,2,kk);
         errorbar(1:numDays,means(:,kk),...
             stds(:,kk),'LineWidth',2);
-        title(sprintf('Test Statistic (measure of VEP magnitude) with Bootstrap Standard Error for Channel %d, Element %d',Chans(ii),kk));
+        title(sprintf('Test Statistic (measure of VEP magnitude) with Bootstrap Standard Error for Channel %d, Element %d',ii,kk));
         ylabel('VEP Magnitude (\muV)');xlabel('Experimental Day');
         axis([0 numDays+1 0 300]);
     end
@@ -106,9 +101,9 @@ for ii=1:numChans
         W = (Stats{numDays}(ii,jj,1)-Stats{1}(ii,jj,1))/(sqrt(Stats{numDays}(ii,jj,2)^2+Stats{1}(ii,jj,2)^2));
         c = norminv(1-alpha,0,1);
         if abs(W) > c
-            display(sprintf('Wald Test for Channel %d,Element %d rejects null, mean VEP magnitude differs between first and last day',Chans(ii),jj));
+            display(sprintf('Wald Test for Channel %d,Element %d rejects null, mean VEP magnitude differs between first and last day',ii,jj));
         else
-            display(sprintf('Wald Test for Channel %d, Element %d retains null',Chans(ii),jj))
+            display(sprintf('Wald Test for Channel %d, Element %d retains null',ii,jj))
         end
     end
 end
@@ -149,7 +144,7 @@ for ii=1:numChans
         estCurve(ii,jj,:,1) = yhat; estCurve(ii,jj,:,2) = lBound; estCurve(ii,jj,:,3) = uBound;
         x = 1:(stimLength*numElements);
         subplot(plotRows,2,jj);boundedline(x,yhat,[lBound,uBound],'alpha');
-        title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,Chans(ii),jj));
+        title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,ii,jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
         axis([0 stimLength*numElements -250 250]);
         %     figure();boundedline(1:numBases,b,2*stats.se,'alpha');

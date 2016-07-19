@@ -1,4 +1,4 @@
-function [Statistic,Response] = SequenceAnalysis(AnimalName,Date,statFun,Chans,Day)
+function [Statistic,Response] = SequenceAnalysis(AnimalName,Date,statFun)
 %SequenceAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
@@ -15,20 +15,13 @@ function [Statistic,Response] = SequenceAnalysis(AnimalName,Date,statFun,Chans,D
 %        use two digits for days and months, i.e. June is 06, the ninth day
 %        of June is 09
 %
-%        OPTIONAL
-%       Chans - a vector of channel numbers used to record neural activity,
-%        defaults to channels 6 and 8, e.g. [6,8]
-%       Day - which day of the experiment as a number
-%        (they usually run 5 days), e.g. 1
-%OUTPUT: Statistic -
-%        Parameters - 
-%        stdErrors - 
-%        estCurve - 
-%        stimLength -
+%OUTPUT: Statistic - stats on VEP magnitude in response to sequence
+%         elements
+%        Response - the LFP signal of the response to sequence elements
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/07/13
+%Updated: 2016/07/19
 %  By: Byron Price
 
 % read in the .plx file
@@ -46,27 +39,20 @@ load(EphysFileName)
 
 if nargin < 3
     statFun = @(x) abs(min(x));
-    Chans = [6,8];
-    Day = 1;
-elseif nargin < 4
-    Chans = [6,8];
-    Day = 1;
-elseif nargin < 5
-    Day = 1;
 end
 
 stimTime = 0.167;
 sampleFreq = adfreq;
 strobeStart = 33;
 
+Chans = find(~cellfun(@isempty,allad));numChans = length(Chans);
 % convert allad data to millivolts, then lowpass filter the data
-dataLength = length(allad{1,strobeStart+Chans(1)-1});
-numChans = length(Chans);
+dataLength = length(allad{1,Chans(1)});
 ChanData = zeros(dataLength,numChans);
 preAmpGain = 1/1000;
 
 for ii=1:numChans
-    voltage = ((allad{1,strobeStart+Chans(ii)-1}).*SlowPeakV)./(0.5*(2^SlowADResBits)*adgains(strobeStart+Chans(ii)-1)*preAmpGain);
+    voltage = ((allad{1,Chans(ii)}).*SlowPeakV)./(0.5*(2^SlowADResBits)*adgains(Chans(ii))*preAmpGain);
     n = 30;
     lowpass = 100/(sampleFreq/2); % fraction of Nyquist frequency
     blo = fir1(n,lowpass,'low',hamming(n+1));
