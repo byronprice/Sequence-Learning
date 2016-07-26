@@ -94,7 +94,7 @@ Radius = round(Radius);
 temp = (tan((1/spatFreq)*pi/180)*(DistToScreen*10))*conv_factor;
 spatFreq = 1/temp;
 
-distToMass = 100;
+distToMass = 135;
 centerVals = zeros(numElements,2);
 degreeDiv = (2*pi)/numElements;
 offset = (2*pi)/3;
@@ -105,6 +105,12 @@ end
 temp = centerVals(2,:);
 centerVals(2,:) = centerVals(3,:);
 centerVals(3,:) = temp;
+ 
+% for ii=1:4
+%     for jj=ii+1:4
+%         dist = sqrt((centerVals(ii,1)-centerVals(jj,1)).^2+(centerVals(ii,2)-centerVals(jj,2)).^2)
+%     end
+% end
 
 estimatedTime = ((stimLen*numElements+waitTime)*reps+3*30+startPause)/60;
 display(sprintf('Estimated time: %3.2f minutes',estimatedTime));
