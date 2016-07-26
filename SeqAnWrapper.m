@@ -12,14 +12,11 @@ function [] = SeqAnWrapper(AnimalName,firstDay,numDays)
 %        of June is 09, 
 %       numDays - the number of days of the experiment, will assume
 %           consecutive days
-%        OPTIONAL
-%       Chans - a vector of channel numbers used to record neural activity,
-%        defaults to channels 6 and 8, e.g. [6,8]
 %OUTPUT:
 %
-%Created: 2016/07/12
+%Created: 2016/07/12, 24 Cummington Mall
 % Byron Price
-%Updated: 2016/07/25
+%Updated: 2016/07/26
 %  By: Byron Price
 
 Days = zeros(numDays,1);
@@ -41,13 +38,14 @@ Stats = cell(numDays,1);
 Responses = cell(numDays,1);
 count = 1;
 for ii = 1:numDays
-    [Statistic,Response,numChans] = SequenceAnalysis(...
+    [Statistic,Response] = SequenceAnalysis(...
         AnimalName,Days(ii),statFun);
     Stats{ii} = Statistic;
     Responses{ii} = Response;
     count = count+1;
 end
-numStimuli = size(Responses{1},2);
+numChans = size(Responses{1},1);
+reps = size(Responses{1},2);
 numElements = size(Responses{1},3);
 stimLength = size(Responses{1},4);
 
@@ -66,7 +64,7 @@ for ii=1:numChans
         %     lq = meanRes-lq;
         %     uq = uq-meanRes; [lq',uq']
         end
-        stdRes = 2*stdRes./sqrt(numStimuli);
+        stdRes = 2*stdRes./sqrt(reps);
         subplot(plotRows,2,jj);
         boundedline(1:stimLength*numElements,meanRes,stdRes,'alpha');
         title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',ii,jj));
@@ -125,10 +123,10 @@ estCurve = zeros(numChans,numDays,stimLength*numElements,3);
 for ii=1:numChans
     figure();plotRows = ceil(numDays/2);
     for jj=1:numDays
-        Y = zeros(stimLength*numStimuli*numElements,1);
+        Y = zeros(stimLength*reps*numElements,1);
         BigBasis = [];
         
-        for kk=1:numStimuli
+        for kk=1:reps
             for ll=1:numElements
                 indeces = (ll-1)*stimLength+1:ll*stimLength;
                 indeces = indeces+(kk-1)*stimLength*numElements;

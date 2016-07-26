@@ -21,12 +21,12 @@ function [Statistic,Response] = SequenceAnalysis(AnimalName,Date,statFun)
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/07/19
+%Updated: 2016/07/26
 %  By: Byron Price
 
 % read in the .plx file
 
-cd('/Users/byronprice/Documents/Current-Projects/ExperimentData/');
+cd('/home/jglab/Documents/MATLAB/Byron/SeqExp/');
 EphysFileName = strcat('SeqData',num2str(Date),'_',num2str(AnimalName));
 
 if exist(strcat(EphysFileName,'.mat'),'file') ~= 2
@@ -88,7 +88,7 @@ for ii=1:numChans
     for jj=1:reps
         %check = (jj-1)*numElements+1:jj*numElements;
         for kk=1:numElements
-            stimOnset = StrobeTimes(count);
+            stimOnset = strobeTimes(count);
             [~,index] = min(abs(timeStamps-stimOnset));
             temp = ChanData(index:index+stimLength-1,ii);
             Response(ii,jj,kk,:) = temp;
@@ -102,7 +102,7 @@ for ii=1:numChans
         n = 5000;
         Tboot = zeros(n,1);
         for kk=1:n
-            indeces = random('Discrete Uniform',numStimuli,[numStimuli,1]);
+            indeces = random('Discrete Uniform',reps,[reps,1]);
             temp = squeeze(Response(ii,:,jj,:));temp = temp(indeces,:);
             meanResponse = mean(temp,1);
             Tboot(kk) = statFun(meanResponse); 
