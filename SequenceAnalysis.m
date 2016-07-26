@@ -33,30 +33,31 @@ if exist(strcat(EphysFileName,'.mat'),'file') ~= 2
     MyReadall(EphysFileName);
 end
 
-%StimulusFileName = strcat('SequenceStim',num2str(Date),'_',num2str(AnimalName),'.mat');
+StimulusFileName = strcat('SeqStim',num2str(Date),'_',num2str(AnimalName),'.mat');
 EphysFileName = strcat(EphysFileName,'.mat');
 load(EphysFileName)
+load(StimulusFileName)
 
 if nargin < 3
     statFun = @(x) abs(min(x));
 end
 
-stimTime = 0.167;
 sampleFreq = adfreq;
 strobeStart = 33;
 
 Chans = find(~cellfun(@isempty,allad));numChans = length(Chans);
+
 % convert allad data to millivolts, then lowpass filter the data
 dataLength = length(allad{1,Chans(1)});
 ChanData = zeros(dataLength,numChans);
-preAmpGain = 1/1000;
-
+preAmpGain = 1;
 for ii=1:numChans
-    voltage = ((allad{1,Chans(ii)}).*SlowPeakV)./(0.5*(2^SlowADResBits)*adgains(Chans(ii))*preAmpGain);
+    voltage = 1000.*((allad{1,Chans(ii)}).*SlowPeakV)./(0.5*(2^SlowADResBits)*adgains(Chans(ii))*preAmpGain);
+    temp = smooth(voltage,0.013*sampleFreq);
     n = 30;
     lowpass = 100/(sampleFreq/2); % fraction of Nyquist frequency
     blo = fir1(n,lowpass,'low',hamming(n+1));
-    ChanData(:,ii) = filter(blo,1,voltage);
+    ChanData(:,ii) = filter(blo,1,temp);
 end
 
 timeStamps = 0:1/sampleFreq:dataLength/sampleFreq-1/sampleFreq;
@@ -65,33 +66,33 @@ if length(timeStamps) ~= dataLength
     display('Error: Review allad cell array and timing')
     return;
 end
-strobeData = tsevs{1,strobeStart};
-strobeDiff = strobeData(2:end)-strobeData(1:end-1);
 
-elementStrobes = [];
-for ii=1:length(strobeDiff)
-    if strobeDiff(ii) > (stimTime-0.1) && strobeDiff(ii) < (stimTime+0.1)
-        elementStrobes = [elementStrobes,strobeData(ii)];
-    end
-end
+strobeTimes = tsevs{1,strobeStart};
+% strobeDiff = strobeTimes(2:end)-strobeTimes(1:end-1);
+% 
+% elementStrobes = [];
+% for ii=1:length(strobeDiff)
+%     if strobeDiff(ii) > (stimTime-0.1) && strobeDiff(ii) < (stimTime+0.1)
+%         elementStrobes = [elementStrobes,strobeTimes(ii)];
+%     end
+% end
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
-numElements = 4;
-numStimuli = length(elementStrobes)/numElements;
+stimLength = round(stimLen*sampleFreq); % 150ms per sequence element
 
-stimLength = round(stimTime*sampleFreq); % 167ms per sequence element
-
-Response = zeros(numChans,numStimuli,numElements,stimLength);
+Response = zeros(numChans,reps,numElements,stimLength);
 Statistic = zeros(numChans,numElements,4);
 alpha = 0.05;
 for ii=1:numChans
-    for jj=1:numStimuli
-        check = (jj-1)*numElements+1:jj*numElements;
+    count = 1;
+    for jj=1:reps
+        %check = (jj-1)*numElements+1:jj*numElements;
         for kk=1:numElements
-            stimOnset = elementStrobes(check(kk));
+            stimOnset = StrobeTimes(count);
             [~,index] = min(abs(timeStamps-stimOnset));
             temp = ChanData(index:index+stimLength-1,ii);
             Response(ii,jj,kk,:) = temp;
+            count = count+1;
         end
         clear check temp;
     end

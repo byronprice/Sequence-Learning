@@ -1,4 +1,4 @@
-function [] = SeqAnWrapper(AnimalName,firstDay,numDays,Chans)
+function [] = SeqAnWrapper(AnimalName,firstDay,numDays)
 %SeqAnWrapper.m
 %   SequenceAnalysis.m runs functions on data from individual days, but
 %    this wrapper will combine data from multiple days
@@ -19,7 +19,7 @@ function [] = SeqAnWrapper(AnimalName,firstDay,numDays,Chans)
 %
 %Created: 2016/07/12
 % Byron Price
-%Updated: 2016/07/19
+%Updated: 2016/07/25
 %  By: Byron Price
 
 Days = zeros(numDays,1);
