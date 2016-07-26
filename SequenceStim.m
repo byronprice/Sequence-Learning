@@ -21,7 +21,7 @@ function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
 %           folder under '/MATLAB/Byron/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/07/25
+% Updated: 2016/07/26
 %  By: Byron Price
 
 cd('/home/jglab/Documents/MATLAB/Byron/RetinoExp/');
@@ -35,7 +35,7 @@ if nargin < 2
     reps = 200;
     stimLen = 150/1000;
     waitTime = 1.5;
-    startPause = 0; % 120 seconds of silence before commencing
+    startPause = 120; % 120 seconds of silence before commencing
     spatFreq = 0.1;
 elseif nargin < 3
     DistToScreen = 25;
@@ -43,7 +43,7 @@ elseif nargin < 3
     reps = 200;
     stimLen = 150/1000;
     waitTime = 1.5;
-    startPause = 120; % 60 seconds of silence before commencing
+    startPause = 120; % 120 seconds of silence before commencing
     spatFreq = 0.1;
 end
 
@@ -107,7 +107,7 @@ centerVals(2,:) = centerVals(3,:);
 centerVals(3,:) = temp;
 
 estimatedTime = ((stimLen*numElements+waitTime)*reps+4*30+startPause)/60;
-display(strcat('Estimated time-',num2str(estimatedTime),' minutes'));
+display(sprintf('Estimated time: %3.2f minutes',estimatedTime);
 
 % Define first and second ring color as RGBA vector with normalized color
 % component range between 0.0 and 1.0, based on Contrast between 0 and 1
