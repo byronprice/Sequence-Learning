@@ -131,6 +131,7 @@ usb.startRecording;
 WaitSecs(startPause);
 
 % Animation loop
+count = 1;
 for yy=1:4
     for zz = 1:reps/4
         vbl = Screen('Flip', win);
@@ -143,13 +144,14 @@ for yy=1:4
                 Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,0,0]);
             % Request stimulus onset
             vbl = Screen('Flip', win, vbl + ifi/2);usb.strobe;
-            vbl = Screen('Flip',win,vbl+ifi/2+stimLen);
+            vbl = Screen('Flip',win,vbl-ifi/2+stimLen);
         end
-        vbl = Screen('Flip',win,vbl+ifi/2+waitTime);
+        vbl = Screen('Flip',win,vbl-ifi/2+waitTime);
     end
     if yy ~= 4
         WaitSecs(30);
     end
+    count = count+1;
 end
 WaitSecs(2);
 usb.stopRecording;

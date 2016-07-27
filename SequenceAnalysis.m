@@ -68,6 +68,7 @@ if length(timeStamps) ~= dataLength
 end
 
 strobeTimes = tsevs{1,strobeStart};
+
 % strobeDiff = strobeTimes(2:end)-strobeTimes(1:end-1);
 % 
 % elementStrobes = [];
