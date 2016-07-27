@@ -1,4 +1,4 @@
-function [Statistic,Response] = SequenceAnalysis(AnimalName,Date,statFun)
+function [Statistic,Response] = SequenceAnalysisOld(AnimalName,Date,statFun)
 %SequenceAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
@@ -79,20 +79,21 @@ strobeTimes = tsevs{1,strobeStart};
 % end
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
-stimLen = round(stimTime*sampleFreq); % 150ms per sequence element
+stimLength = round(stimLen*sampleFreq); % 150ms per sequence element
 
-Response = zeros(numChans,reps,numElements,stimLen);
+Response = zeros(numChans,reps,numElements,stimLength);
 Statistic = zeros(numChans,numElements,4);
 alpha = 0.05;
 for ii=1:numChans
-    for jj=1:numElements
-        elemStrobes = strobeTimes(svStrobed==jj);
+    count = 1;
+    for jj=1:reps
         %check = (jj-1)*numElements+1:jj*numElements;
-        for kk=1:reps
-            stimOnset = elemStrobes(kk);
+        for kk=1:numElements
+            stimOnset = strobeTimes(count);
             [~,index] = min(abs(timeStamps-stimOnset));
-            temp = ChanData(index:index+stimLen-1,ii);
-            Response(ii,kk,jj,:) = temp;
+            temp = ChanData(index:index+stimLength-1,ii);
+            Response(ii,jj,kk,:) = temp;
+            count = count+1;
         end
         clear check temp;
     end

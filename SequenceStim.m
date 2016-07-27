@@ -21,7 +21,7 @@ function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
 %           folder under '/MATLAB/Byron/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/07/26
+% Updated: 2016/07/27
 %  By: Byron Price
 
 cd('/home/jglab/Documents/MATLAB/Byron/RetinoExp/');
@@ -33,19 +33,23 @@ if nargin < 2
     DistToScreen = 25;
     degreeRadius = 5;
     reps = 200;
-    stimLen = 150/1000;
+    stimTime = 145/1000; % set to 145ms and the system hits 150ms
     waitTime = 1.5;
-    startPause = 30; % 120 seconds of silence before commencing
+    blocks = 4;
+    holdTime = 30;
     spatFreq = 0.1;
 elseif nargin < 3
     DistToScreen = 25;
     degreeRadius = 5;
     reps = 200;
-    stimLen = 150/1000;
+    stimTime = 145/1000;
     waitTime = 1.5;
-    startPause = 30; % 120 seconds of silence before commencing
+    blocks = 4;
+    holdTime = 30;
     spatFreq = 0.1;
 end
+
+reps = reps-mod(reps,blocks);
 
 Date = datetime('today','Format','yyyy-MM-dd');
 Date = char(Date); Date = strrep(Date,'-','');
@@ -112,8 +116,8 @@ centerVals(3,:) = temp;
 %     end
 % end
 
-estimatedTime = ((stimLen*numElements+waitTime)*reps+3*30+startPause)/60;
-display(sprintf('Estimated time: %3.2f minutes',estimatedTime));
+estimatedTime = ((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
+display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 
 % Define first and second ring color as RGBA vector with normalized color
 % component range between 0.0 and 1.0, based on Contrast between 0 and 1
@@ -127,14 +131,15 @@ White = 1;
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
-usb.startRecording;
-WaitSecs(startPause);
+usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
+WaitSecs(holdTime);
 
 % Animation loop
 count = 1;
-for yy=1:4
-    for zz = 1:reps/4
-        vbl = Screen('Flip', win);
+for yy=1:blocks
+    vbl = Screen('Flip',win);
+    for zz = 1:reps/blocks
+%         vbl = Screen('Flip', win);
         for ii=1:numElements
             %         orient = rand*2*pi;
             % Draw the procedural texture as any other texture via 'DrawTexture'
@@ -143,13 +148,15 @@ for yy=1:4
                 [], [],[White,Black,...
                 Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,0,0]);
             % Request stimulus onset
-            vbl = Screen('Flip', win, vbl + ifi/2);usb.strobe;
-            vbl = Screen('Flip',win,vbl-ifi/2+stimLen);
+            vbl = Screen('Flip', win);usb.strobeEventWord(ii);
+            vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
         end
+        usb.strobeEventWord(5);
         vbl = Screen('Flip',win,vbl-ifi/2+waitTime);
     end
-    if yy ~= 4
-        WaitSecs(30);
+    if yy ~= blocks
+        usb.strobeEventWord(0);
+        WaitSecs(holdTime);
     end
     count = count+1;
 end
@@ -159,8 +166,8 @@ Priority(0);
 
 cd('~/Documents/MATLAB/Byron/SeqExp')
 fileName = strcat('SeqStim',Date,'_',num2str(AnimalName),'.mat');
-save(fileName,'centerVals','Radius','reps','stimLen','startPause',...
-    'numElements','w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime')
+save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
+    'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime')
 % Close window
 Screen('CloseAll');
 
