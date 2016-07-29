@@ -27,7 +27,7 @@ function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
 cd('/home/jglab/Documents/MATLAB/Byron/RetinoExp/');
 load(strcat('RetinoMap',num2str(AnimalName),'.mat'));
 
-directory = '/home/jglab/Documents/MATLAB/Byron/Sequence-Learning/';
+directory = '/home/jglab/Documents/MATLAB/Byron/Sequence-Learning';
 if nargin < 2
     numElements = 4;
     DistToScreen = 25;
@@ -38,7 +38,7 @@ if nargin < 2
     blocks = 4;
     holdTime = 30;
     spatFreq = 0.2;
-    gamma = 2.4;
+    gamma = 2.1806;
 elseif nargin < 3
     DistToScreen = 25;
     degreeRadius = 5;
@@ -48,7 +48,7 @@ elseif nargin < 3
     blocks = 4;
     holdTime = 30;
     spatFreq = 0.2;
-    gamma = 2.4;
+    gamma = 2.1806;
 end
 
 reps = reps-mod(reps,blocks);
@@ -131,6 +131,7 @@ Black = 0;
 White = 1;
 
 Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
 rng(AnimalName);
 orient = rand([numElements,1]).*(2*pi);
 % Perform initial flip to gray background and sync us to the retrace:
@@ -140,7 +141,6 @@ usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
-count = 1;
 for yy=1:blocks
     vbl = Screen('Flip',win);
     for zz = 1:reps/blocks
@@ -151,7 +151,7 @@ for yy=1:blocks
                 [], [],[White,Black,...
                 Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,orient(ii),gamma]);
             % Request stimulus onset
-            vbl = Screen('Flip', win);usb.strobeEventWord(ii);
+            vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(ii);
             vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
         end
         usb.strobeEventWord(5);
@@ -161,7 +161,6 @@ for yy=1:blocks
         usb.strobeEventWord(0);
         vbl = Screen('Flip',win,vbl-ifi/2+holdTime);
     end
-    count = count+1;
 end
 WaitSecs(2);
 usb.stopRecording;

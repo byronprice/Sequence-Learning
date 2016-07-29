@@ -79,7 +79,7 @@ stimLen = round(stimTime*sampleFreq); % 150ms per sequence element
 minWin = round(0.04*sampleFreq):1:round(0.1*sampleFreq);
 maxWin = round(.1*sampleFreq):1:round(0.2*sampleFreq);
 
-Response = zeros(numChans,reps,numElements,stimLen);
+Response = zeros(numChans,numElements,reps,stimLen);
 Statistic = zeros(numChans,numElements,4);
 alpha = 0.05;
 for ii=1:numChans
@@ -90,7 +90,7 @@ for ii=1:numChans
             stimOnset = elemStrobes(kk);
             [~,index] = min(abs(timeStamps-stimOnset));
             temp = ChanData(index:index+stimLen-1,ii);
-            Response(ii,kk,jj,:) = temp;
+            Response(ii,jj,kk,:) = temp;
         end
         clear check temp;
     end
@@ -101,11 +101,12 @@ for ii=1:numChans
         Tboot = zeros(n,1);
         for kk=1:n
             indeces = random('Discrete Uniform',reps,[reps,1]);
-            temp = squeeze(Response(ii,:,jj,:));temp = temp(indeces,:);
+            temp = squeeze(Response(ii,jj,:,:));temp = temp(indeces,:);
             meanResponse = mean(temp,1);
             Tboot(kk) = max(meanResponse(maxWin))-min(meanResponse(minWin)); 
         end
-        Statistic(ii,jj,1) = statFun(mean(squeeze(Response(ii,:,jj,:)),1));Statistic(ii,jj,2) = std(Tboot);
+        meanResponse = mean(squeeze(Response(ii,jj,:,:)),1);
+        Statistic(ii,jj,1) = max(meanResponse(maxWin))-min(meanResponse(minWin));Statistic(ii,jj,2) = std(Tboot);
         Statistic(ii,jj,3) = quantile(Tboot,alpha/2);Statistic(ii,jj,4) = quantile(Tboot,1-alpha/2);
     end
 %     figure();

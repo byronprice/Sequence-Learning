@@ -16,7 +16,7 @@ function [] = SeqAnWrapper(AnimalName,firstDay,numDays)
 %
 %Created: 2016/07/12, 24 Cummington Mall
 % Byron Price
-%Updated: 2016/07/26
+%Updated: 2016/07/29
 %  By: Byron Price
 
 Days = zeros(numDays,1);
@@ -45,8 +45,8 @@ for ii = 1:numDays
     count = count+1;
 end
 numChans = size(Responses{1},1);
-reps = size(Responses{1},2);
-numElements = size(Responses{1},3);
+numElements = size(Responses{1},2);
+reps = size(Responses{1},3);
 stimLen = size(Responses{1},4);
 
 for ii=1:numChans
