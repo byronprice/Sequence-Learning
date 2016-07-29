@@ -37,7 +37,8 @@ if nargin < 2
     waitTime = 1.5;
     blocks = 4;
     holdTime = 30;
-    spatFreq = 0.1;
+    spatFreq = 0.2;
+    gamma = 2.4;
 elseif nargin < 3
     DistToScreen = 25;
     degreeRadius = 5;
@@ -46,7 +47,8 @@ elseif nargin < 3
     waitTime = 1.5;
     blocks = 4;
     holdTime = 30;
-    spatFreq = 0.1;
+    spatFreq = 0.2;
+    gamma = 2.4;
 end
 
 reps = reps-mod(reps,blocks);
@@ -69,7 +71,8 @@ screenid = max(Screen('Screens'));
 
 % Open a fullscreen onscreen window on that display, choose a background
 % color of 128 = gray with 50% max intensity; 0 = black
-[win,~] = Screen('OpenWindow', screenid,0);
+background = 128; % gray, mean luminance
+[win,~] = Screen('OpenWindow', screenid,background);
 
 % Switch color specification to use the 0.0 - 1.0 range
 Screen('ColorRange', win, 1);
@@ -127,7 +130,9 @@ Grey = 0.5;
 Black = 0;
 White = 1;
 
-%orientation = (rand([numStimuli,1])*360)*pi/180;
+Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+rng(AnimalName);
+orient = rand([numElements,1]).*(2*pi);
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
@@ -140,12 +145,11 @@ for yy=1:blocks
     vbl = Screen('Flip',win);
     for zz = 1:reps/blocks
         for ii=1:numElements
-            %         orient = rand*2*pi;
             % Draw the procedural texture as any other texture via 'DrawTexture'
             Screen('DrawTexture', win,gratingTex, [],[],...
                 [],[],[],[Grey Grey Grey Grey],...
                 [], [],[White,Black,...
-                Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,0,0]);
+                Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,orient(ii),gamma]);
             % Request stimulus onset
             vbl = Screen('Flip', win);usb.strobeEventWord(ii);
             vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
