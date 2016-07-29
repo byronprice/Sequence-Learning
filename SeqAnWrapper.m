@@ -31,7 +31,7 @@ for ii=2:numDays
 end
 
 %statFun = @(x) trapz(abs(x));
-statFun = @(x) abs(min(x));
+%statFun = @(x) abs(min(x));
 %statFun = @(x) max(x)-min(x);
 
 Stats = cell(numDays,1);
@@ -39,7 +39,7 @@ Responses = cell(numDays,1);
 count = 1;
 for ii = 1:numDays
     [Statistic,Response] = SequenceAnalysis(...
-        AnimalName,Days(ii),statFun);
+        AnimalName,Days(ii));
     Stats{ii} = Statistic;
     Responses{ii} = Response;
     count = count+1;
@@ -47,7 +47,7 @@ end
 numChans = size(Responses{1},1);
 reps = size(Responses{1},2);
 numElements = size(Responses{1},3);
-stimLength = size(Responses{1},4);
+stimLen = size(Responses{1},4);
 
 for ii=1:numChans
     figure();plotRows = ceil(numDays/2);
@@ -66,10 +66,10 @@ for ii=1:numChans
         end
         stdRes = 2*stdRes./sqrt(reps);
         subplot(plotRows,2,jj);
-        boundedline(1:stimLength*numElements,meanRes,stdRes,'alpha');
+        boundedline(1:stimLen*numElements,meanRes,stdRes,'alpha');
         title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',ii,jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
-        axis([0 stimLength*numElements -500 500]);
+        axis([0 stimLen*numElements -500 500]);
     end
 end
 
@@ -107,29 +107,29 @@ for ii=1:numChans
 end
 
 numBases = 50;
-Basis = zeros(stimLength*numElements,numBases);
+Basis = zeros(stimLen*numElements,numBases);
 s = 10;
 % 50 bases and s = 10 works well, so does 30 and 15
 % Gaussian radial basis functions
 for ii=1:numBases
-    Basis(:,ii) = exp((-((1:stimLength*numElements)-stimLength*numElements*(ii-1)/numBases).^2)./(2*s^2));
+    Basis(:,ii) = exp((-((1:stimLen*numElements)-stimLen*numElements*(ii-1)/numBases).^2)./(2*s^2));
 %     plot(Basis(:,ii));hold on;
 end
 
 Parameters = zeros(numChans,numDays,numBases);
 stdErrors = zeros(numChans,numDays,numBases);
-estCurve = zeros(numChans,numDays,stimLength*numElements,3);
+estCurve = zeros(numChans,numDays,stimLen*numElements,3);
 
 for ii=1:numChans
     figure();plotRows = ceil(numDays/2);
     for jj=1:numDays
-        Y = zeros(stimLength*reps*numElements,1);
+        Y = zeros(stimLen*reps*numElements,1);
         BigBasis = [];
         
         for kk=1:reps
             for ll=1:numElements
-                indeces = (ll-1)*stimLength+1:ll*stimLength;
-                indeces = indeces+(kk-1)*stimLength*numElements;
+                indeces = (ll-1)*stimLen+1:ll*stimLen;
+                indeces = indeces+(kk-1)*stimLen*numElements;
                 Y(indeces) = squeeze(Responses{jj}(ii,kk,ll,:));
             end
             BigBasis = [BigBasis;Basis];
@@ -140,11 +140,11 @@ for ii=1:numChans
         
         Parameters(ii,jj,:) = b; stdErrors(ii,jj,:) = stats.se;
         estCurve(ii,jj,:,1) = yhat; estCurve(ii,jj,:,2) = lBound; estCurve(ii,jj,:,3) = uBound;
-        x = 1:(stimLength*numElements);
+        x = 1:(stimLen*numElements);
         subplot(plotRows,2,jj);boundedline(x,yhat,[lBound,uBound],'alpha');
         title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,ii,jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
-        axis([0 stimLength*numElements -500 500]);
+        axis([0 stimLen*numElements -500 500]);
         %     figure();boundedline(1:numBases,b,2*stats.se,'alpha');
     end
 end

@@ -1,4 +1,4 @@
-function [Statistic,Response] = SequenceAnalysis(AnimalName,Date,statFun)
+function [Statistic,Response] = SequenceAnalysis(AnimalName,Date)
 %SequenceAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
@@ -38,10 +38,6 @@ EphysFileName = strcat(EphysFileName,'.mat');
 load(EphysFileName)
 load(StimulusFileName)
 
-if nargin < 3
-    statFun = @(x) abs(min(x));
-end
-
 sampleFreq = adfreq;
 strobeStart = 33;
 
@@ -80,6 +76,8 @@ strobeTimes = tsevs{1,strobeStart};
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
 stimLen = round(stimTime*sampleFreq); % 150ms per sequence element
+minWin = round(0.04*sampleFreq):1:round(0.1*sampleFreq);
+maxWin = round(.1*sampleFreq):1:round(0.2*sampleFreq);
 
 Response = zeros(numChans,reps,numElements,stimLen);
 Statistic = zeros(numChans,numElements,4);
@@ -105,7 +103,7 @@ for ii=1:numChans
             indeces = random('Discrete Uniform',reps,[reps,1]);
             temp = squeeze(Response(ii,:,jj,:));temp = temp(indeces,:);
             meanResponse = mean(temp,1);
-            Tboot(kk) = statFun(meanResponse); 
+            Tboot(kk) = max(meanResponse(maxWin))-min(meanResponse(minWin)); 
         end
         Statistic(ii,jj,1) = statFun(mean(squeeze(Response(ii,:,jj,:)),1));Statistic(ii,jj,2) = std(Tboot);
         Statistic(ii,jj,3) = quantile(Tboot,alpha/2);Statistic(ii,jj,4) = quantile(Tboot,1-alpha/2);

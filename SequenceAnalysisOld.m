@@ -1,5 +1,5 @@
 function [Statistic,Response] = SequenceAnalysisOld(AnimalName,Date,statFun)
-%SequenceAnalysis.m
+%SequenceAnalysisOld.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
 %   grating that displays for 160 ms.  The stimulus lasts, therefore, a
@@ -21,7 +21,7 @@ function [Statistic,Response] = SequenceAnalysisOld(AnimalName,Date,statFun)
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/07/27
+%Updated: 2016/07/29
 %  By: Byron Price
 
 % read in the .plx file
@@ -79,9 +79,9 @@ strobeTimes = tsevs{1,strobeStart};
 % end
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
-stimLength = round(stimLen*sampleFreq); % 150ms per sequence element
+stimLen = round(stimTime*sampleFreq); % 150ms per sequence element
 
-Response = zeros(numChans,reps,numElements,stimLength);
+Response = zeros(numChans,reps,numElements,stimLen);
 Statistic = zeros(numChans,numElements,4);
 alpha = 0.05;
 for ii=1:numChans
@@ -91,7 +91,7 @@ for ii=1:numChans
         for kk=1:numElements
             stimOnset = strobeTimes(count);
             [~,index] = min(abs(timeStamps-stimOnset));
-            temp = ChanData(index:index+stimLength-1,ii);
+            temp = ChanData(index:index+stimLen-1,ii);
             Response(ii,jj,kk,:) = temp;
             count = count+1;
         end

@@ -139,7 +139,6 @@ count = 1;
 for yy=1:blocks
     vbl = Screen('Flip',win);
     for zz = 1:reps/blocks
-%         vbl = Screen('Flip', win);
         for ii=1:numElements
             %         orient = rand*2*pi;
             % Draw the procedural texture as any other texture via 'DrawTexture'
@@ -156,7 +155,7 @@ for yy=1:blocks
     end
     if yy ~= blocks
         usb.strobeEventWord(0);
-        WaitSecs(holdTime);
+        vbl = Screen('Flip',win,vbl-ifi/2+holdTime);
     end
     count = count+1;
 end
