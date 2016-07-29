@@ -21,7 +21,7 @@ function [Statistic,Response] = SequenceAnalysis(AnimalName,Date)
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/07/27
+%Updated: 2016/07/29
 %  By: Byron Price
 
 % read in the .plx file

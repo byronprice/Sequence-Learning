@@ -21,7 +21,7 @@ function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
 %           folder under '/MATLAB/Byron/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/07/27
+% Updated: 2016/07/29
 %  By: Byron Price
 
 cd('/home/jglab/Documents/MATLAB/Byron/RetinoExp/');
