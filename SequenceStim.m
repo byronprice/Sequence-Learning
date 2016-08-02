@@ -10,12 +10,9 @@ function [] = SequenceStim(AnimalName,holdTime)
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
 %
 %        Optional- 
-%        holdTime - amount of time to wait between blocks about 50 stimuli
-%        numElements - number of elements in the sequence
-%        DistToScreen - physical distance of observer from the screen, in
-%           units of cm
-%        degreeRadius - degrees of visual field that radius of square will occupy
-%        spatFreq - spatial frequency of oriented sinusoidal grating
+%        holdTime - amount of time to wait between blocks of about 50 stimuli
+% 
+%        see file SequenceVars.mat for other changeable presets
 %
 % OUTPUT: a file with stimulus parameters named SeqStimDate_AnimalName
 %           e.g. SeqStim20160708_12345.mat to be saved in the RetinoExp
@@ -28,28 +25,12 @@ function [] = SequenceStim(AnimalName,holdTime)
 cd('~/CloudStation/ByronExp/RetinoExp');
 load(strcat('RetinoMap',num2str(AnimalName),'.mat'));
 
+cd('~/CloudStation/ByronExp/SeqExp');
+load('SequenceVars.mat');
+
 directory = '/home/jglab/Documents/MATLAB/Byron/Sequence-Learning';
 if nargin < 2
     holdTime = 30;
-    numElements = 4;
-    DistToScreen = 25;
-    degreeRadius = 5;
-    reps = 200;
-    stimTime = 145/1000; % set to 145ms and the system hits 150ms
-    waitTime = 1.5;
-    blocks = 4;
-    spatFreq = 0.2;
-    gamma = 2.1806;
-elseif nargin < 3
-    numElements = 4;
-    DistToScreen = 25;
-    degreeRadius = 5;
-    reps = 200;
-    stimTime = 145/1000;
-    waitTime = 1.5;
-    blocks = 4;
-    spatFreq = 0.2;
-    gamma = 2.1806;
 end
 
 reps = reps-mod(reps,blocks);
