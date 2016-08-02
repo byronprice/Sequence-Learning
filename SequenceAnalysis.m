@@ -26,7 +26,7 @@ function [Statistic,Response] = SequenceAnalysis(AnimalName,Date)
 
 % read in the .plx file
 
-cd('/home/jglab/Documents/MATLAB/Byron/SeqExp/');
+cd('~/CloudStation/ByronExp/SeqExp/');
 EphysFileName = strcat('SeqData',num2str(Date),'_',num2str(AnimalName));
 
 if exist(strcat(EphysFileName,'.mat'),'file') ~= 2
@@ -75,7 +75,7 @@ strobeTimes = tsevs{1,strobeStart};
 % end
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
-stimLen = round(stimTime*sampleFreq); % 150ms per sequence element
+stimLen = round(0.2*sampleFreq); % 150ms per sequence element
 minWin = round(0.04*sampleFreq):1:round(0.1*sampleFreq);
 maxWin = round(.1*sampleFreq):1:round(0.2*sampleFreq);
 

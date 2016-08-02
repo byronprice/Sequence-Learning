@@ -16,13 +16,13 @@ function [] = SeqAnWrapper(AnimalName,firstDay,numDays)
 %
 %Created: 2016/07/12, 24 Cummington Mall
 % Byron Price
-%Updated: 2016/07/29
+%Updated: 2016/08/02
 %  By: Byron Price
 
 Days = zeros(numDays,1);
 Days(1) = firstDay;
 firstDay = num2str(firstDay);
-x = datenum(str2double(firstDay(1:4)),str2double(firstDay(5:6)),str2double(firstDay(7:8)));
+x = datenum(firstDay,'yyyymmdd');
 
 for ii=2:numDays
     x = x+1;
