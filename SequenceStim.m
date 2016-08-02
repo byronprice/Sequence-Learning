@@ -1,7 +1,7 @@
-function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
+function [] = SequenceStim(AnimalName,holdTime)
 %SequenceStim.m
-%  Display a sequence of white circles on a black background, set around
-%   the center of mass of the already-recorded retinotopy of an LFP
+%  Display a sequence of sinusoidal white/black circles on a gray background,
+%   set around the center of mass of the already-recorded retinotopy of an LFP
 %   recording electrode. This code will coordinate with the Retinotopy.m
 %   code and the saved file RetinoMapAnimalName.mat, e.g.
 %   RetinoMap26881.mat .
@@ -10,6 +10,7 @@ function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
 %
 %        Optional- 
+%        holdTime - amount of time to wait between blocks about 50 stimuli
 %        numElements - number of elements in the sequence
 %        DistToScreen - physical distance of observer from the screen, in
 %           units of cm
@@ -21,7 +22,7 @@ function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
 %           folder under '/MATLAB/Byron/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/08/01
+% Updated: 2016/08/02
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/RetinoExp');
@@ -29,6 +30,7 @@ load(strcat('RetinoMap',num2str(AnimalName),'.mat'));
 
 directory = '/home/jglab/Documents/MATLAB/Byron/Sequence-Learning';
 if nargin < 2
+    holdTime = 30;
     numElements = 4;
     DistToScreen = 25;
     degreeRadius = 5;
@@ -36,17 +38,16 @@ if nargin < 2
     stimTime = 145/1000; % set to 145ms and the system hits 150ms
     waitTime = 1.5;
     blocks = 4;
-    holdTime = 30;
     spatFreq = 0.2;
     gamma = 2.1806;
 elseif nargin < 3
+    numElements = 4;
     DistToScreen = 25;
     degreeRadius = 5;
     reps = 200;
     stimTime = 145/1000;
     waitTime = 1.5;
     blocks = 4;
-    holdTime = 30;
     spatFreq = 0.2;
     gamma = 2.1806;
 end
