@@ -21,10 +21,10 @@ function [] = SequenceStim(AnimalName,numElements,DistToScreen,degreeRadius)
 %           folder under '/MATLAB/Byron/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/07/29
+% Updated: 2016/08/01
 %  By: Byron Price
 
-cd('/home/jglab/Documents/MATLAB/Byron/RetinoExp/');
+cd('~/CloudStation/ByronExp/RetinoExp');
 load(strcat('RetinoMap',num2str(AnimalName),'.mat'));
 
 directory = '/home/jglab/Documents/MATLAB/Byron/Sequence-Learning';
@@ -70,8 +70,8 @@ WaitSecs(10);
 screenid = max(Screen('Screens'));
 
 % Open a fullscreen onscreen window on that display, choose a background
-% color of 128 = gray with 50% max intensity; 0 = black
-background = 128; % gray, mean luminance
+% color of 127 = gray with 50% max intensity; 0 = black
+background = 127; % gray, mean luminance
 [win,~] = Screen('OpenWindow', screenid,background);
 
 % Switch color specification to use the 0.0 - 1.0 range
@@ -166,7 +166,7 @@ WaitSecs(2);
 usb.stopRecording;
 Priority(0);
 
-cd('~/Documents/MATLAB/Byron/SeqExp')
+cd('~/CloudStation/ByronExp/SeqExp');
 fileName = strcat('SeqStim',Date,'_',num2str(AnimalName),'.mat');
 save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime')
