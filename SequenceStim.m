@@ -19,11 +19,11 @@ function [] = SequenceStim(AnimalName,holdTime)
 %           folder under '/MATLAB/Byron/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/08/02
+% Updated: 2016/08/03
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/RetinoExp');
-load(strcat('RetinoMap',num2str(AnimalName),'.mat'));
+load(sprintf('RetinoMap%d.mat',AnimalName));
 
 cd('~/CloudStation/ByronExp/SeqExp');
 load('SequenceVars.mat');
@@ -32,11 +32,10 @@ directory = '/home/jglab/Documents/MATLAB/Byron/Sequence-Learning';
 if nargin < 2
     holdTime = 30;
 end
-
 reps = reps-mod(reps,blocks);
 
 Date = datetime('today','Format','yyyy-MM-dd');
-Date = char(Date); Date = strrep(Date,'-','');
+Date = char(Date); Date = strrep(Date,'-','');Date = str2double(Date);
 % Acquire a handle to OpenGL, so we can use OpenGL commands in our code:
 global GL;
 
@@ -149,7 +148,7 @@ usb.stopRecording;
 Priority(0);
 
 cd('~/CloudStation/ByronExp/SeqExp');
-fileName = strcat('SeqStim',Date,'_',num2str(AnimalName),'.mat');
+fileName = sprintf('SeqStim%d_%d.mat',Date,AnimalName);
 save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime')
 % Close window

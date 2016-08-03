@@ -1,13 +1,12 @@
 function [] = SeqAnWrapper(AnimalName)
 %SeqAnWrapper.m
-%    This wrapper will compare data from the sequence stimulus protocol 
-%     across days for the same animal (see SequenceStim.m and readme). 
-%     It assumes the data is all in SeqConv files, e.g. SeqConv20160701_34561.mat
-%     DailySequences.m is set to automatically run every day on my computer
-%     and convert the SeqData ... .plx files to SeqConv ... .mat files. 
-%     DailySequences.m calls on SequenceAnalysis.m, which extracts the LFP for 
-%     200 ms after each sequence element onset and calculates the VEP
-%     magnitude, and its standard error (using bootstrapping). 
+%    This wrapper will combine data from multiple days. The
+%    DailySequences.m is set to automatically run every day and convert the
+%    SeqData ... .plx files to SeqConv ... .mat files. DailySequences.m
+%    calls on SequenceAnalysis.m, which effectively extracts the LFP for 
+%    200 ms after each sequence element onset and calculates the VEP
+%    magnitude, and its standard error (using bootstrapping).
+%
 %
 %INPUT: AnimalName - unique ID for the animal, e.g. 12340.  The first four
 %        digits are its cage code and the last is the value of the individual
@@ -22,17 +21,32 @@ function [] = SeqAnWrapper(AnimalName)
 
 cd('~/CloudStation/ByronExp/SeqExp');
 
-fileStart = sprintf('SeqConv*_%d*',AnimalName);
+fileStart = sprintf('SeqConv*_%d',AnimalName);
 fileList = dir(fileStart);
 numDays = length(fileList);
+Days(1) = firstDay;
+firstDay = num2str(firstDay);
+x = datenum(firstDay,'yyyymmdd');
+
+for ii=2:numDays
+    x = x+1;
+    result = datetime(x,'ConvertFrom','datenum','Format','yyyyMMdd');
+    Days(ii) = str2double(datestr(result,'yyyymmdd'));
+end
+
+%statFun = @(x) trapz(abs(x));
+%statFun = @(x) abs(min(x));
+%statFun = @(x) max(x)-min(x);
 
 Stats = cell(numDays,1);
 Responses = cell(numDays,1);
+count = 1;
 for ii = 1:numDays
-    load(fileList(ii).name);
+    [Statistic,Response] = SequenceAnalysis(...
+        AnimalName,Days(ii));
     Stats{ii} = Statistic;
     Responses{ii} = Response;
-    clear Statistic Response;
+    count = count+1;
 end
 numChans = size(Responses{1},1);
 numElements = size(Responses{1},2);

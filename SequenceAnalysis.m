@@ -2,8 +2,11 @@ function [Statistic,Response] = SequenceAnalysis(AnimalName,Date)
 %SequenceAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
-%   grating that displays for 160 ms.  The stimulus lasts, therefore, a
-%   total of 160*4 = 640 ms, followed by a blank grey screen for 1.5
+%   grating that displays for 150 ms. The elements are sinusoidal grating with a
+%   a circular 2D Gaussian kernel overlying to create a circular image that
+%   decays at the edges. Each circle occupies about a 5-degree radius of visual
+%   space (see SequenceStim.m).  The stimulus lasts a
+%   total of 150*4 = 600 ms, followed by a blank grey screen for 1.5
 %   seconds and then a repetition of the four-element sequence.
 %
 % Reference: Gavornik & Bear, 2014
@@ -21,19 +24,21 @@ function [Statistic,Response] = SequenceAnalysis(AnimalName,Date)
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/07/29
+%Updated: 2016/08/03
 %  By: Byron Price
 
 % read in the .plx file
 
 cd('~/CloudStation/ByronExp/SeqExp/');
-EphysFileName = strcat('SeqData',num2str(Date),'_',num2str(AnimalName));
+EphysFileName = sprintf('SeqData%d_%d',Date,AnimalName); % don't want the
+                      % file identifier at this point as MyReadall.m does
+                      % that part
 
 if exist(strcat(EphysFileName,'.mat'),'file') ~= 2
     MyReadall(EphysFileName);
 end
 
-StimulusFileName = strcat('SeqStim',num2str(Date),'_',num2str(AnimalName),'.mat');
+StimulusFileName = sprintf('SeqStim%d_%d.mat',Date,AnimalName);
 EphysFileName = strcat(EphysFileName,'.mat');
 load(EphysFileName)
 load(StimulusFileName)
@@ -75,7 +80,8 @@ strobeTimes = tsevs{1,strobeStart};
 % end
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
-stimLen = round(0.2*sampleFreq); % 150ms per sequence element
+stimLen = round(0.2*sampleFreq); % 150ms per sequence element but we'll take 
+          % 200 ms because the peak sometimes occurs beyond 150ms
 minWin = round(0.04*sampleFreq):1:round(0.1*sampleFreq);
 maxWin = round(.1*sampleFreq):1:round(0.2*sampleFreq);
 
