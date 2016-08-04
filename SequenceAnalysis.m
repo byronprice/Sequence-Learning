@@ -124,7 +124,8 @@ for ii=1:numChans
 %     end
     
 end
-
-
+trueStimLen = mean(strobeTimes(svStrobed==2)-strobeTimes(svStrobed==1));
+trueStimLen = round(trueStimLen*sampleFreq);
+Response = Response(:,:,:,1:trueStimLen);
 end
 

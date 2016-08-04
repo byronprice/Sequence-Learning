@@ -47,8 +47,8 @@ for ii=1:numChans
         %     lq = [];
         %     uq = [];
         for zz = 1:numElements
-            meanRes = [meanRes,mean(squeeze(Responses{jj}(ii,:,zz,:)),1)];
-            stdRes = [stdRes,std(squeeze(Responses{jj}(ii,:,zz,:)),0,1)];
+            meanRes = [meanRes,mean(squeeze(Responses{jj}(ii,zz,:,:)),1)];
+            stdRes = [stdRes,std(squeeze(Responses{jj}(ii,zz,:,:)),0,1)];
             %         lq = [lq,quantile(squeeze(Response(ii,:,zz,:)),alpha/2,1)];
             %         uq  = [uq,quantile(squeeze(Response(ii,:,zz,:)),1-alpha/2,1)];
         %     lq = meanRes-lq;
@@ -89,7 +89,7 @@ for ii=1:numChans
         W = (Stats{numDays}(ii,jj,1)-Stats{1}(ii,jj,1))/(sqrt(Stats{numDays}(ii,jj,2)^2+Stats{1}(ii,jj,2)^2));
         c = norminv(1-alpha,0,1);
         if abs(W) > c
-            display(sprintf('Wald Test for Channel %d,Element %d rejects null, mean VEP magnitude differs between first and last day',ii,jj));
+            display(sprintf('Wald Test for Channel %d,Element %d rejects null, mean VEP magnitude greater last day than first day',ii,jj));
         else
             display(sprintf('Wald Test for Channel %d, Element %d retains null',ii,jj))
         end
@@ -120,7 +120,7 @@ for ii=1:numChans
             for ll=1:numElements
                 indeces = (ll-1)*stimLen+1:ll*stimLen;
                 indeces = indeces+(kk-1)*stimLen*numElements;
-                Y(indeces) = squeeze(Responses{jj}(ii,kk,ll,:));
+                Y(indeces) = squeeze(Responses{jj}(ii,ll,kk,:));
             end
             BigBasis = [BigBasis;Basis];
         end
