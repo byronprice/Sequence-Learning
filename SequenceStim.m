@@ -150,7 +150,8 @@ Priority(0);
 cd('~/CloudStation/ByronExp/SeqExp');
 fileName = sprintf('SeqStim%d_%d.mat',Date,AnimalName);
 save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
-    'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime')
+    'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
+    'DistToScreen')
 % Close window
 Screen('CloseAll');
 
