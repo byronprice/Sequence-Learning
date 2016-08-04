@@ -83,7 +83,7 @@ for ii=1:numChans
 end
 
 % WALD TEST
-alpha = 0.05/numElements;
+alpha = 0.05/(numElements*numChans); % Bonferoni correction
 for ii=1:numChans
     for jj=1:numElements
         W = (Stats{numDays}(ii,jj,1)-Stats{1}(ii,jj,1))/(sqrt(Stats{numDays}(ii,jj,2)^2+Stats{1}(ii,jj,2)^2));
