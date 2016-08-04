@@ -18,7 +18,7 @@ today = datetime('today','Format','yyyy-MM-dd');
 today = char(today); today = strrep(today,'-','');
 today = str2double(today);
 
-fileStart = 'SeqData*.plx';
+fileStart = sprintf('SeqData*%d*.plx',today);
 
 fileList = dir(fileStart);
 numFiles = size(fileList,1);
@@ -28,11 +28,9 @@ idlen = 5;
 for ii=1:numFiles
     index = regexp(fileList(ii).name,'_');
     Date = str2double(fileList(ii).name(index-datelen:index-1));
-    if Date == today
-        AnimalName = str2double(fileList(ii).name(index+1:index+idlen));
-        [Statistic,Response] = SequenceAnalysis(AnimalName,Date);
-        save(sprintf('SeqConv%d_%d.mat',Date,AnimalName),...
+    AnimalName = str2double(fileList(ii).name(index+1:index+idlen));
+    [Statistic,Response] = SequenceAnalysis(AnimalName,Date);
+    save(sprintf('SeqConv%d_%d.mat',Date,AnimalName),...
             'Statistic','Response');
-    end
     clear Statistic Response;
 end
