@@ -165,7 +165,7 @@ Test(2).name = 'Same orientation order, reversed position';
 Test(3).name = 'Same position order, reversed orientation';
 
 cd('~/CloudStation/ByronExp/SeqExp');
-fileName = sprintf('SeqStim%d_%d.mat',Date,AnimalName);
+fileName = sprintf('SeqTest%d_%d.mat',Date,AnimalName);
 save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
     'DistToScreen','numTests','Test','orient')
