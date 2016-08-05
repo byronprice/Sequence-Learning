@@ -96,47 +96,47 @@ for ii=1:numChans
     end
 end
 
-numBases = 50;
-Basis = zeros(stimLen*numElements,numBases);
-s = 10;
-% 50 bases and s = 10 works well, so does 30 and 15
-% Gaussian radial basis functions
-for ii=1:numBases
-    Basis(:,ii) = exp((-((1:stimLen*numElements)-stimLen*numElements*(ii-1)/numBases).^2)./(2*s^2));
-%     plot(Basis(:,ii));hold on;
-end
-
-Parameters = zeros(numChans,numDays,numBases);
-stdErrors = zeros(numChans,numDays,numBases);
-estCurve = zeros(numChans,numDays,stimLen*numElements,3);
-
-for ii=1:numChans
-    figure();plotRows = ceil(numDays/2);
-    for jj=1:numDays
-        Y = zeros(stimLen*reps*numElements,1);
-        BigBasis = [];
-        
-        for kk=1:reps
-            for ll=1:numElements
-                indeces = (ll-1)*stimLen+1:ll*stimLen;
-                indeces = indeces+(kk-1)*stimLen*numElements;
-                Y(indeces) = squeeze(Responses{jj}(ii,ll,kk,:));
-            end
-            BigBasis = [BigBasis;Basis];
-        end
-        
-        [b,~,stats] = glmfit(BigBasis,Y,'normal','constant','off');
-        [yhat,lBound,uBound] = glmval(b,Basis,'identity',stats,'confidence',1-alpha,'constant','off');
-        
-        Parameters(ii,jj,:) = b; stdErrors(ii,jj,:) = stats.se;
-        estCurve(ii,jj,:,1) = yhat; estCurve(ii,jj,:,2) = lBound; estCurve(ii,jj,:,3) = uBound;
-        x = 1:(stimLen*numElements);
-        subplot(plotRows,2,jj);boundedline(x,yhat,[lBound,uBound],'alpha');
-        title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,ii,jj));
-        ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
-        axis([0 stimLen*numElements -500 500]);
-        %     figure();boundedline(1:numBases,b,2*stats.se,'alpha');
-    end
-end
+% numBases = 50;
+% Basis = zeros(stimLen*numElements,numBases);
+% s = 10;
+% % 50 bases and s = 10 works well, so does 30 and 15
+% % Gaussian radial basis functions
+% for ii=1:numBases
+%     Basis(:,ii) = exp((-((1:stimLen*numElements)-stimLen*numElements*(ii-1)/numBases).^2)./(2*s^2));
+% %     plot(Basis(:,ii));hold on;
+% end
+% 
+% Parameters = zeros(numChans,numDays,numBases);
+% stdErrors = zeros(numChans,numDays,numBases);
+% estCurve = zeros(numChans,numDays,stimLen*numElements,3);
+% 
+% for ii=1:numChans
+%     figure();plotRows = ceil(numDays/2);
+%     for jj=1:numDays
+%         Y = zeros(stimLen*reps*numElements,1);
+%         BigBasis = [];
+%         
+%         for kk=1:reps
+%             for ll=1:numElements
+%                 indeces = (ll-1)*stimLen+1:ll*stimLen;
+%                 indeces = indeces+(kk-1)*stimLen*numElements;
+%                 Y(indeces) = squeeze(Responses{jj}(ii,ll,kk,:));
+%             end
+%             BigBasis = [BigBasis;Basis];
+%         end
+%         
+%         [b,~,stats] = glmfit(BigBasis,Y,'normal','constant','off');
+%         [yhat,lBound,uBound] = glmval(b,Basis,'identity',stats,'confidence',1-alpha,'constant','off');
+%         
+%         Parameters(ii,jj,:) = b; stdErrors(ii,jj,:) = stats.se;
+%         estCurve(ii,jj,:,1) = yhat; estCurve(ii,jj,:,2) = lBound; estCurve(ii,jj,:,3) = uBound;
+%         x = 1:(stimLen*numElements);
+%         subplot(plotRows,2,jj);boundedline(x,yhat,[lBound,uBound],'alpha');
+%         title(sprintf('VEP Regression Fit Using %d Gaussian Radial Basis Functions: Channel %d, Day %d',numBases,ii,jj));
+%         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
+%         axis([0 stimLen*numElements -500 500]);
+%         %     figure();boundedline(1:numBases,b,2*stats.se,'alpha');
+%     end
+% end
 end
 

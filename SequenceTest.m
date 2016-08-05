@@ -1,11 +1,6 @@
-function [] = SequenceStim(AnimalName,holdTime)
-%SequenceStim.m
-%  Display a sequence of sinusoidal white/black circles on a gray background,
-%   set around the center of mass of the already-recorded retinotopy of an LFP
-%   recording electrode. This code will coordinate with the Retinotopy.m
-%   code and the saved file RetinoMapAnimalName.mat, e.g.
-%   RetinoMap26881.mat .
-%  Each circle will occupy a 5-degree radius of visual space
+function [] = SequenceTest(AnimalName,holdTime)
+%SequenceTest.m
+%  Test after running SequenceStim.m for three days.
 % INPUT: Obligatory-
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
 %
@@ -14,10 +9,10 @@ function [] = SequenceStim(AnimalName,holdTime)
 % 
 %        see file SequenceVars.mat for other changeable presets
 %
-% OUTPUT: a file with stimulus parameters named SeqStimDate_AnimalName
-%           e.g. SeqStim20160708_12345.mat to be saved in CloudStation's 
-%           SeqExp folder under '~/CloudStation/ByronExp/SeqExp'
-% Created: 2016/07/25 at 24 Cummington, Boston
+% OUTPUT: a file with stimulus parameters named SeqTestDate_AnimalName
+%           e.g. SeqTest20160708_12345.mat to be saved in CloudStation's SeqExp
+%           folder under '~/CloudStation/ByronExp/SeqExp'
+% Created: 2016/08/04 at 5920 Colchester Road, Fairfax, VA
 %  Byron Price
 % Updated: 2016/08/04
 %  By: Byron Price
@@ -65,8 +60,8 @@ Screen('ColorRange', win, 1);
 % Retrieve monitor refresh duration
 ifi = Screen('GetFlipInterval', win);
 
-dgshader = [directory '/SequenceStim.vert.txt'];
-GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim.frag.txt'] }, 1);
+dgshader = [directory '/SequenceTest.vert.txt'];
+GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceTest.frag.txt'] }, 1);
 gratingTex = Screen('SetOpenGLTexture', win, [], 0, GL.TEXTURE_3D,w_pixels,...
     h_pixels, 1, GratingShader);
 
@@ -83,25 +78,43 @@ Radius = round(Radius);
 temp = (tan((1/spatFreq)*pi/180)*(DistToScreen*10))*conv_factor;
 spatFreq = 1/temp;
 
+numTests = 3;
 distToMass = 135;
-centerVals = zeros(numElements,2);
+centerVals = zeros(numTests,numElements,2);
 degreeDiv = (2*pi)/numElements;
 offset = (2*pi)/3;
 for ii=1:numElements
-    centerVals(ii,1) = round(centerMass(Channel,1)+cos(degreeDiv*(ii-1)+offset)*distToMass);
-    centerVals(ii,2) = round(centerMass(Channel,2)+sin(degreeDiv*(ii-1)+offset)*distToMass);
+    centerVals(1,ii,1) = round(centerMass(Channel,1)+cos(degreeDiv*(ii-1)+offset)*distToMass);
+    centerVals(1,ii,2) = round(centerMass(Channel,2)+sin(degreeDiv*(ii-1)+offset)*distToMass);
 end
-temp = centerVals(2,:);
-centerVals(2,:) = centerVals(3,:);
-centerVals(3,:) = temp;
- 
+temp = centerVals(1,2,:);
+centerVals(1,2,:) = centerVals(1,3,:);
+centerVals(1,3,:) = temp;clear temp;
+
+% first test, same as original sequence, missing second element
+% second test, reversed positions, original orientation order
+% third test, reveresed orientations, original position order
+alpha = ones(numTests,numElements);
+alpha(1,2) = 0; % alpha mixing for first test, second element
+
+rng(AnimalName);
+orient = zeros(numTests,numElements);
+temp = rand([1,numElements]).*(2*pi);
+orient(1,:) = temp;
+orient(2,:) = temp;
+orient(3,:) = fliplr(temp);
+centerVals(2,:,1) = fliplr(centerVals(1,:,1));
+centerVals(2,:,2) = fliplr(centerVals(1,:,2));
+centerVals(3,:,1) = centerVals(1,:,1);
+centerVals(3,:,2) = centerVals(1,:,2);
+
 % for ii=1:4
 %     for jj=ii+1:4
 %         dist = sqrt((centerVals(ii,1)-centerVals(jj,1)).^2+(centerVals(ii,2)-centerVals(jj,2)).^2)
 %     end
 % end
 
-estimatedTime = ((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
+estimatedTime = numTests*((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 
 % Define first and second ring color as RGBA vector with normalized color
@@ -109,13 +122,9 @@ display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 % create all textures in the same window (win), each of the appropriate
 % size
 Grey = 0.5;
-Black = 0;
-White = 1;
 
 Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-rng(AnimalName);
-orient = rand([numElements,1]).*(2*pi);
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
@@ -123,23 +132,25 @@ usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
-for yy=1:blocks
-    vbl = Screen('Flip',win);
-    for zz = 1:reps/blocks
-        for ii=1:numElements
-            % Draw the procedural texture as any other texture via 'DrawTexture'
-            Screen('DrawTexture', win,gratingTex, [],[],...
-                [],[],[],[Grey Grey Grey Grey],...
-                [], [],[White,Black,...
-                Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,orient(ii),gama]);
-            % Request stimulus onset
-            vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(ii);
-            vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+for xx=1:numTests
+    for yy=1:blocks
+        vbl = Screen('Flip',win);
+        for zz = 1:reps/blocks
+            for ii=1:numElements
+                % Draw the procedural texture as any other texture via 'DrawTexture'
+                Screen('DrawTexture', win,gratingTex,[],[],...
+                    [],[],[],[Grey Grey Grey Grey],...
+                    [], [],[alpha(xx,ii),0,...
+                    Radius,centerVals(xx,ii,1),centerVals(xx,ii,2),spatFreq,orient(xx,ii),gama]);
+                % Request stimulus onset
+                elemNum = (xx-1)*(numElements+1)+ii;
+                vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(elemNum);
+                vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+            end
+            greyNum = xx*(numElements+1);
+            usb.strobeEventWord(greyNum);
+            vbl = Screen('Flip',win,vbl-ifi/2+waitTime);
         end
-        usb.strobeEventWord(5);
-        vbl = Screen('Flip',win,vbl-ifi/2+waitTime);
-    end
-    if yy ~= blocks
         usb.strobeEventWord(0);
         vbl = Screen('Flip',win,vbl-ifi/2+holdTime);
     end
@@ -148,11 +159,16 @@ WaitSecs(2);
 usb.stopRecording;
 Priority(0);
 
+Test = struct('name',cell(numTests,1));
+Test(1).name = 'Blank Second Element';
+Test(2).name = 'Same orientation order, reversed position';
+Test(3).name = 'Same position order, reversed orientation';
+
 cd('~/CloudStation/ByronExp/SeqExp');
 fileName = sprintf('SeqStim%d_%d.mat',Date,AnimalName);
 save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
-    'DistToScreen','orient')
+    'DistToScreen','numTests','Test','orient')
 % Close window
 Screen('CloseAll');
 

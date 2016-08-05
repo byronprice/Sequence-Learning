@@ -1,13 +1,12 @@
-/* SequenceStim.vert.txt */
+/* SequenceTest.vert.txt */
 
 /* Attributes passed from Screen(): See the ProceduralShadingAPI.m file for infos: */
 attribute vec4 auxParameters0;
 attribute vec4 auxParameters1;
 attribute vec4 modulateColor;
 
-varying vec4 White;
 varying vec4 Grey;
-varying vec4 Black;
+varying float alpha;
 varying float Radius;
 varying float CenterX;
 varying float CenterY;
@@ -24,10 +23,9 @@ void main()
 
     /* Pass first and second color to fragment shader: */
     Grey = modulateColor;
-    White = vec4(auxParameters0[0],auxParameters0[0],auxParameters0[0],auxParameters0[0]);
-    Black = vec4(auxParameters0[1],auxParameters0[1],auxParameters0[1],auxParameters0[1]);
 
     /* Pass variables to the fragment shader for control of grating: */
+    alpha = auxParameters0[0];
     Radius = auxParameters0[2];
     CenterX = auxParameters0[3];
     CenterY = auxParameters1[0];
