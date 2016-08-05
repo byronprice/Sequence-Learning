@@ -114,7 +114,7 @@ centerVals(3,:,2) = centerVals(1,:,2);
 %     end
 % end
 
-estimatedTime = numTests*((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
+estimatedTime = (numTests*((stimTime*numElements+waitTime)*reps+blocks*holdTime))/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 
 % Define first and second ring color as RGBA vector with normalized color
