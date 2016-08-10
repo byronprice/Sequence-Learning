@@ -93,7 +93,7 @@ Radius = round(Radius);
 temp = (tan((1/spatFreq)*pi/180)*(DistToScreen*10))*conv_factor;
 spatFreq = 1/temp;
 
-numTests = 3;
+numTests = 4;
 distToMass = 135;
 centerVals = zeros(numTests,numElements,2);
 degreeDiv = (2*pi)/numElements;
@@ -110,18 +110,19 @@ centerVals(1,3,:) = temp;clear temp;
 % second test, reversed positions, original orientation order
 % third test, reveresed orientations, original position order
 alpha = ones(numTests,numElements);
-alpha(1,2) = 0; % alpha mixing for first test, second element
+alpha(2,2) = 0; % alpha mixing for second test, second element
 
 rng(AnimalName);
 orient = zeros(numTests,numElements);
 temp = rand([1,numElements]).*(2*pi);
 orient(1,:) = temp;
 orient(2,:) = temp;
-orient(3,:) = fliplr(temp);
-centerVals(2,:,1) = fliplr(centerVals(1,:,1));
-centerVals(2,:,2) = fliplr(centerVals(1,:,2));
-centerVals(3,:,1) = centerVals(1,:,1);
-centerVals(3,:,2) = centerVals(1,:,2);
+orient(3,:) = temp;
+orient(4,:) = fliplr(temp);
+centerVals(3,:,1) = fliplr(centerVals(1,:,1));
+centerVals(3,:,2) = fliplr(centerVals(1,:,2));
+centerVals(4,:,1) = centerVals(1,:,1);
+centerVals(4,:,2) = centerVals(1,:,2);
 
 % for ii=1:4
 %     for jj=ii+1:4
@@ -177,9 +178,10 @@ usb.stopRecording;
 Priority(0);
 
 Test = struct('name',cell(numTests,1));
-Test(1).name = 'Blank Second Element';
-Test(2).name = 'Same orientation order, reversed position';
-Test(3).name = 'Same position order, reversed orientation';
+Test(1).name = 'Original';
+Test(2).name = 'Blank second element';
+Test(3).name = 'Same orientation order, reversed position';
+Test(4).name = 'Same position order, reversed orientation';
 
 cd('~/CloudStation/ByronExp/SeqExp');
 fileName = sprintf('SeqTest%d_%d.mat',Date,AnimalName);

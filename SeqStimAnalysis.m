@@ -1,5 +1,5 @@
-function [Statistic,Response] = SequenceAnalysis(AnimalName,Date)
-%SequenceAnalysis.m
+function [Statistic,Response] = SeqStimAnalysis(AnimalName,Date)
+%SeqStimAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
 %   grating that displays for 150 ms. The elements are sinusoidal grating with a
@@ -24,7 +24,7 @@ function [Statistic,Response] = SequenceAnalysis(AnimalName,Date)
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/08/03
+%Updated: 2016/08/10
 %  By: Byron Price
 
 % read in the .plx file
