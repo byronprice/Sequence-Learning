@@ -14,7 +14,7 @@ function [] = SequenceTest(AnimalName,holdTime)
 %           folder under '~/CloudStation/ByronExp/SeqExp'
 % Created: 2016/08/04 at 5920 Colchester Road, Fairfax, VA
 %  Byron Price
-% Updated: 2016/08/04
+% Updated: 2016/08/10
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/RetinoExp');
@@ -40,24 +40,39 @@ AssertOpenGL;
 
 usb = usb1208FSPlusClass;
 display(usb);
-
 WaitSecs(10);
 
-% Choose screen with maximum id - the secondary display:
-screenid = max(Screen('Screens'));
+% usb = ttlInterfaceClass.getTTLInterface;
+% if ~usb.validateInterface
+%     handleWarning('TTL Interface validation failed',true,'TTL Warning',[],true);
+% end
+% usb.stopRecording; % for some reason, doesn't start unless previously stopped
 
-% Open a fullscreen onscreen window on that display, choose a background
-% color of 127 = gray with 50% max intensity; 0 = black
+% sio = screenInterfaceClass.returnInterface;
+% sio.openScreen;
+% win = sio.window;
+% ifi = sio.slack*2;
+% mp = sio.getMonitorProfile;
+% w_pixels = mp.cols;
+% h_pixels = mp.rows;
+% w_mm = 1e3*mp.screen_width;
+% h_mm = 1e3*mp.screen_height;
+
+% % Choose screen with maximum id - the secondary display:
+screenid = max(Screen('Screens'));
+% 
+% % Open a fullscreen onscreen window on that display, choose a background
+% % color of 127 = gray with 50% max intensity; 0 = black
 background = 127; % gray, mean luminance
 [win,~] = Screen('OpenWindow', screenid,background);
 
 % Switch color specification to use the 0.0 - 1.0 range
 Screen('ColorRange', win, 1);
 
-% Query window size in pixels
+% % Query window size in pixels
 [w_pixels, h_pixels] = Screen('WindowSize', win);
-
-% Retrieve monitor refresh duration
+% 
+% % Retrieve monitor refresh duration
 ifi = Screen('GetFlipInterval', win);
 
 dgshader = [directory '/SequenceTest.vert.txt'];
@@ -128,7 +143,9 @@ Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
-usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
+usb.startRecording;
+WaitSecs(1);
+usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
@@ -170,6 +187,7 @@ save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
     'DistToScreen','numTests','Test','orient')
 % Close window
-Screen('CloseAll');
+% Screen('CloseAll');
+sio.deleteAllTextures;
 
 end
