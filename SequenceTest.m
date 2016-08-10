@@ -91,44 +91,50 @@ Radius = (tan(degreeRadius*pi/180)*(DistToScreen*10))*conv_factor; % get number 
      % that degreeRadius degrees of visual space will occupy
 Radius = round(Radius);
 temp = (tan((1/spatFreq)*pi/180)*(DistToScreen*10))*conv_factor;
-spatFreq = 1/temp;
+spatFreq = 1/temp;clear temp;
 
 numTests = 4;
-distToMass = 135;
+% extract the angle of the 2-D Gaussian to target the stimulus to the
+% strongest responding locations within the retinotopic map
+[V,D] = eig(squeeze(Sigma(Channel,:,:)));
+[~,index] = max(max(D));
+offset = atan2(V(2,index),V(1,index));
+
+if offset < 0 
+    offset = offset+2*pi;
+end
+
 centerVals = zeros(numTests,numElements,2);
 degreeDiv = (2*pi)/numElements;
-offset = (2*pi)/3;
-for ii=1:numElements
-    centerVals(1,ii,1) = round(centerMass(Channel,1)+cos(degreeDiv*(ii-1)+offset)*distToMass);
-    centerVals(1,ii,2) = round(centerMass(Channel,2)+sin(degreeDiv*(ii-1)+offset)*distToMass);
+centerVals(1,1,1) = centerMass(Channel,1);centerVals(1,1,2) = centerMass(Channel,2);
+for ii=2:numElements
+    centerVals(1,ii,1) = centerMass(Channel,1)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
+    centerVals(1,ii,2) = centerMass(Channel,2)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
 end
-temp = centerVals(1,2,:);
-centerVals(1,2,:) = centerVals(1,3,:);
-centerVals(1,3,:) = temp;clear temp;
+temp2 = centerVals(1,2,:);temp3 = centerVals(1,3,:);
+centerVals(1,2,:) = centerVals(1,1,:);
+centerVals(1,3,:) = temp2;
+centerVals(1,1,:) = temp3;
 
-% first test, same as original sequence, missing second element
-% second test, reversed positions, original orientation order
-% third test, reveresed orientations, original position order
+% first test, original sequence
+% second test, original sequence, but missing second element
+% third test, reversed positions, original orientation order
+% fourth test, reveresed orientations, original position order
 alpha = ones(numTests,numElements);
 alpha(2,2) = 0; % alpha mixing for second test, second element
 
-rng(AnimalName);
 orient = zeros(numTests,numElements);
-temp = rand([1,numElements]).*(2*pi);
+temp = [150,60,30,120].*pi./180;
 orient(1,:) = temp;
 orient(2,:) = temp;
 orient(3,:) = temp;
 orient(4,:) = fliplr(temp);
+centerVals(2,:,1) = centerVals(1,:,1);
+centerVals(2,:,2) = centerVals(1,:,2);
 centerVals(3,:,1) = fliplr(centerVals(1,:,1));
 centerVals(3,:,2) = fliplr(centerVals(1,:,2));
 centerVals(4,:,1) = centerVals(1,:,1);
 centerVals(4,:,2) = centerVals(1,:,2);
-
-% for ii=1:4
-%     for jj=ii+1:4
-%         dist = sqrt((centerVals(ii,1)-centerVals(jj,1)).^2+(centerVals(ii,2)-centerVals(jj,2)).^2)
-%     end
-% end
 
 estimatedTime = (numTests*((stimTime*numElements+waitTime)*reps+blocks*holdTime))/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));

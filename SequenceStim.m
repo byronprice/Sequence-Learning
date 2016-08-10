@@ -81,25 +81,29 @@ Radius = (tan(degreeRadius*pi/180)*(DistToScreen*10))*conv_factor; % get number 
      % that degreeRadius degrees of visual space will occupy
 Radius = round(Radius);
 temp = (tan((1/spatFreq)*pi/180)*(DistToScreen*10))*conv_factor;
-spatFreq = 1/temp;
+spatFreq = 1/temp;clear temp;
 
-distToMass = 135;
+% extract the angle of the 2-D Gaussian to target the stimulus to the
+% strongest responding locations within the retinotopic map
+[V,D] = eig(squeeze(Sigma(Channel,:,:)));
+[~,index] = max(max(D));
+offset = atan2(V(2,index),V(1,index));
+
+if offset < 0 
+    offset = offset+2*pi;
+end
+
 centerVals = zeros(numElements,2);
 degreeDiv = (2*pi)/numElements;
-offset = (2*pi)/3;
-for ii=1:numElements
-    centerVals(ii,1) = round(centerMass(Channel,1)+cos(degreeDiv*(ii-1)+offset)*distToMass);
-    centerVals(ii,2) = round(centerMass(Channel,2)+sin(degreeDiv*(ii-1)+offset)*distToMass);
+centerVals(1,1) = centerMass(Channel,1);centerVals(1,2) = centerMass(Channel,2);
+for ii=2:numElements
+    centerVals(ii,1) = centerMass(Channel,1)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
+    centerVals(ii,2) = centerMass(Channel,2)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
 end
-temp = centerVals(2,:);
-centerVals(2,:) = centerVals(3,:);
-centerVals(3,:) = temp;
- 
-% for ii=1:4
-%     for jj=ii+1:4
-%         dist = sqrt((centerVals(ii,1)-centerVals(jj,1)).^2+(centerVals(ii,2)-centerVals(jj,2)).^2)
-%     end
-% end
+temp2 = centerVals(2,:);temp3 = centerVals(3,:);
+centerVals(2,:) = centerVals(1,:);
+centerVals(3,:) = temp2;
+centerVals(1,:) = temp3;
 
 estimatedTime = ((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
@@ -114,8 +118,7 @@ White = 1;
 
 Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-rng(AnimalName);
-orient = rand([numElements,1]).*(2*pi);
+orient = [150,60,30,120].*pi./180;
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
