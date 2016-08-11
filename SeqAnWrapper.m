@@ -54,7 +54,7 @@ for ii=1:numChans
         %     lq = meanRes-lq;
         %     uq = uq-meanRes; [lq',uq']
         end
-        stdRes = 2*stdRes;
+        stdRes = 2.*stdRes./sqrt(reps);
         subplot(plotRows,2,jj);
         boundedline(1:stimLen*numElements,meanRes,stdRes,'alpha');
         title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',ii,jj));

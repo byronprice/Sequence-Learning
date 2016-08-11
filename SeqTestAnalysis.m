@@ -142,7 +142,7 @@ for ii=1:numChans
             meanRes = [meanRes,mean(squeeze(Response(ii,jj,kk,:,:)),1)];
             stdRes = [stdRes,std(squeeze(Response(ii,jj,kk,:,:)),0,1)];
         end
-        stdRes = 2*stdRes;
+        stdRes = 2.*stdRes./sqrt(reps);
         subplot(plotRows,2,jj);
         boundedline(1:trueStimLen*numElements,meanRes,stdRes,'alpha');
         title(strcat(sprintf('Mean VEP: Channel %d, Test- ',ii),Test(jj).name));
