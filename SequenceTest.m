@@ -186,8 +186,8 @@ Priority(0);
 Test = struct('name',cell(numTests,1));
 Test(1).name = 'Original';
 Test(2).name = 'Blank second element';
-Test(3).name = 'Same orientation order, reversed position';
-Test(4).name = 'Same position order, reversed orientation';
+Test(3).name = 'Same orientations, reversed positions';
+Test(4).name = 'Same positions, reversed orientations';
 
 cd('~/CloudStation/ByronExp/SeqExp');
 fileName = sprintf('SeqTest%d_%d.mat',Date,AnimalName);

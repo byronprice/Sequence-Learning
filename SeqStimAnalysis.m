@@ -1,4 +1,4 @@
-function [Statistic,Response] = SeqStimAnalysis(AnimalName,Date)
+function [Statistic,Response,Latency,sampleFreq ] = SeqStimAnalysis(AnimalName,Date)
 %SeqStimAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
@@ -21,10 +21,13 @@ function [Statistic,Response] = SeqStimAnalysis(AnimalName,Date)
 %OUTPUT: Statistic - stats on VEP magnitude in response to sequence
 %         elements
 %        Response - the LFP signal of the response to sequence elements
+%        Latency - latency of minimum and maximum mean LFP after each
+%         element onset (in seconds)
+%        sampleFreq - sampling frequency
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/08/10
+%Updated: 2016/08/11
 %  By: Byron Price
 
 % read in the .plx file
@@ -80,12 +83,15 @@ strobeTimes = tsevs{1,strobeStart};
 % end
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
-stimLen = round(0.2*sampleFreq); % 150ms per sequence element but we'll take 
+stimLen = round((stimTime+0.1)*sampleFreq); % 150ms per sequence element but we'll take 
           % 200 ms because the peak sometimes occurs beyond 150ms
-minWin = round(0.04*sampleFreq):1:round(0.1*sampleFreq);
-maxWin = round(.1*sampleFreq):1:round(0.2*sampleFreq);
+minStart = round(0.05*sampleFreq);minEnd = round(0.15*sampleFreq);
+maxStart = round(.1*sampleFreq);maxEnd = round(0.225*sampleFreq);
+minWin = minStart:1:minEnd;
+maxWin = maxStart:1:maxEnd;
 
 Response = zeros(numChans,numElements,reps,stimLen);
+Latency = zeros(numChans,numElements,4);
 Statistic = zeros(numChans,numElements,4);
 alpha = 0.05;
 for ii=1:numChans
@@ -114,6 +120,10 @@ for ii=1:numChans
         meanResponse = mean(squeeze(Response(ii,jj,:,:)),1);
         Statistic(ii,jj,1) = max(meanResponse(maxWin))-min(meanResponse(minWin));Statistic(ii,jj,2) = std(Tboot);
         Statistic(ii,jj,3) = quantile(Tboot,alpha/2);Statistic(ii,jj,4) = quantile(Tboot,1-alpha/2);
+        [minVal,minInd] = min(meanResponse(minWin));Latency(ii,jj,1) = minStart/sampleFreq+minInd/sampleFreq;
+        Latency(ii,jj,2) = minVal;
+        [maxVal,maxInd] = max(meanResponse(maxWin));Latency(ii,jj,3) = maxStart/sampleFreq+maxInd/sampleFreq;
+        Latency(ii,jj,4) = maxVal;
     end
 %     figure();
 %     for ll=1:numElements

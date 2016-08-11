@@ -1,4 +1,4 @@
-function [Statistic,Response] = SeqTestAnalysis(AnimalName,Date)
+function [Statistic,Response,Latency] = SeqTestAnalysis(AnimalName,Date)
 %SeqTestAnalysis.m
 %   Analyze data from the test day, after 3 days of experiments.
 %   SequenceStim.m is shown to the mice on three consecutive days, with
@@ -17,10 +17,11 @@ function [Statistic,Response] = SeqTestAnalysis(AnimalName,Date)
 %OUTPUT: Statistic - stats on VEP magnitude in response to sequence
 %         elements
 %        Response - the LFP signal of the response to sequence elements
+%        Latency - time (in seconds) to 
 %
 %Created: 2016/08/10, 24 Cummington, Boston
 % Byron Price
-%Updated: 2016/08/10
+%Updated: 2016/08/11
 %  By: Byron Price
 
 % read in the .plx file
@@ -76,12 +77,15 @@ strobeTimes = tsevs{1,strobeStart};
 % end
 
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
-stimLen = round(0.2*sampleFreq); % 150ms per sequence element but we'll take 
+stimLen = round((stimTime+0.1)*sampleFreq); % 150ms per sequence element but we'll take 
           % 200 ms because the peak sometimes occurs beyond 150ms
-minWin = round(0.04*sampleFreq):1:round(0.1*sampleFreq);
-maxWin = round(.1*sampleFreq):1:round(0.2*sampleFreq);
+minStart = round(0.05*sampleFreq);minEnd = round(0.15*sampleFreq);
+maxStart = round(.1*sampleFreq);maxEnd = round(0.225*sampleFreq);
+minWin = minStart:1:minEnd;
+maxWin = maxStart:1:maxEnd;
 
 Response = zeros(numChans,numTests,numElements,reps,stimLen);
+Latency = zeros(numChans,numTests,numElements,4);
 Statistic = zeros(numChans,numTests,numElements,4);
 alpha = 0.05;
 for ii=1:numChans
@@ -113,6 +117,10 @@ for ii=1:numChans
             meanResponse = mean(squeeze(Response(ii,jj,kk,:,:)),1);
             Statistic(ii,jj,kk,1) = max(meanResponse(maxWin))-min(meanResponse(minWin));Statistic(ii,jj,kk,2) = std(Tboot);
             Statistic(ii,jj,kk,3) = quantile(Tboot,alpha/2);Statistic(ii,jj,kk,4) = quantile(Tboot,1-alpha/2);
+            [minVal,minInd] = min(meanResponse(minWin));Latency(ii,jj,kk,1) = minStart/sampleFreq+minInd/sampleFreq;
+            Latency(ii,jj,kk,2) = minVal;
+            [maxVal,maxInd] = max(meanResponse(maxWin));Latency(ii,jj,kk,3) = maxStart/sampleFreq+maxInd/sampleFreq;
+            Latency(ii,jj,kk,4) = maxVal;
         end
     end
 %     figure();
@@ -129,8 +137,9 @@ trueStimLen = round(trueStimLen*sampleFreq);
 Response = Response(:,:,:,:,1:trueStimLen);
 
 ConvFileName = sprintf('SeqTestConv%d_%d.mat',Date,AnimalName);
-save(ConvFileName,'Statistic','Response','Test');
+save(ConvFileName,'Statistic','Response','Test','Latency','sampleFreq');
 
+latStart = 0:trueStimLen:trueStimLen*(numElements-1);
 for ii=1:numChans
     figure();plotRows = ceil(numTests/2);
     for jj=1:numTests
@@ -148,6 +157,9 @@ for ii=1:numChans
         title(strcat(sprintf('Mean VEP: Channel %d, Test- ',ii),Test(jj).name));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
         axis([0 trueStimLen*numElements -500 500]);
+        hold on; plot(latStart'+squeeze(Latency(ii,jj,:,1))*sampleFreq,squeeze(Latency(ii,jj,:,2)),'vr');
+        plot(latStart'+squeeze(Latency(ii,jj,:,3))*sampleFreq,squeeze(Latency(ii,jj,:,4)),'^k');
+        hold off;
     end
 end
 

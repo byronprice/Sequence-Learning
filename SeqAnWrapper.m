@@ -17,7 +17,7 @@ function [] = SeqAnWrapper(AnimalName)
 %
 %Created: 2016/07/12, 24 Cummington Mall
 % Byron Price
-%Updated: 2016/08/03
+%Updated: 2016/08/11
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/SeqExp');
@@ -28,17 +28,20 @@ numDays = length(fileList);
 
 Stats = cell(numDays,1);
 Responses = cell(numDays,1);
+Latencies = cell(numDays,1);
 for ii = 1:numDays
     load(fileList(ii).name);
     Stats{ii} = Statistic;
     Responses{ii} = Response;
-    clear Statistic Response;
+    Latencies{ii} = Latency;
+    clear Statistic Response Latency;
 end
 numChans = size(Responses{1},1);
 numElements = size(Responses{1},2);
 reps = size(Responses{1},3);
 stimLen = size(Responses{1},4);
 
+latStart = 0:stimLen:stimLen*(numElements-1);
 for ii=1:numChans
     figure();plotRows = ceil(numDays/2);
     for jj=1:numDays
@@ -60,6 +63,9 @@ for ii=1:numChans
         title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',ii,jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
         axis([0 stimLen*numElements -500 500]);
+        hold on; plot(latStart+squeeze(Latencies{jj}(ii,:,1))*sampleFreq,squeeze(Latencies{jj}(ii,:,2)),'vr');
+        plot(latStart+squeeze(Latencies{jj}(ii,:,3))*sampleFreq,squeeze(Latencies{jj}(ii,:,4)),'^k');
+        hold off;
     end
 end
 
