@@ -167,10 +167,11 @@ usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
+vbl = Screen('Flip',win);
 for ii=1:numTests
     for jj=1:blocks
-        vbl = Screen('Flip',win);
         for kk= 1:reps/blocks
+            vbl = Screen('Flip',win,vbl+ifi/2);
             for ll=1:numElements
                 % Draw the procedural texture as any other texture via 'DrawTexture'
                 Screen('DrawTexture', win,gratingTex,[],[],...
