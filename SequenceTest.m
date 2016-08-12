@@ -153,6 +153,9 @@ Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
+% we have event words from 0 to 255, so 3 tests and greater than 10
+% elements would break the code, but up to 9 tests and 9 elements each
+% would be fine
 elemNums = zeros(numTests,numElements);
 for ii=1:numTests
     for jj=1:numElements
