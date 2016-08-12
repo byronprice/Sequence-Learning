@@ -63,7 +63,9 @@ screenid = max(Screen('Screens'));
 % 
 % % Open a fullscreen onscreen window on that display, choose a background
 % % color of 127 = gray with 50% max intensity; 0 = black
-background = 127; % gray, mean luminance
+colorRange = 0:1:255;
+[~,index] = min(abs(colorRange.^gama-255^gama/2));
+background = colorRange(index)-6;
 [win,~] = Screen('OpenWindow', screenid,background);
 
 % Switch color specification to use the 0.0 - 1.0 range
@@ -143,7 +145,7 @@ display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 % component range between 0.0 and 1.0, based on Contrast between 0 and 1
 % create all textures in the same window (win), each of the appropriate
 % size
-Grey = 0.5;
+Grey = 0.5^(1/gama);
 
 Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
