@@ -150,28 +150,35 @@ Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
+elemNums = zeros(numTests,numElements);
+for ii=1:numTests
+    for jj=1:numElements
+    mystr = sprintf('%d%d',ii,jj);
+    elemNums(ii,jj) = str2double(mystr);
+    end
+end
+
 usb.startRecording;
 WaitSecs(1);
 usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
-for xx=1:numTests
-    for yy=1:blocks
+for ii=1:numTests
+    for jj=1:blocks
         vbl = Screen('Flip',win);
-        for zz = 1:reps/blocks
-            for ii=1:numElements
+        for kk= 1:reps/blocks
+            for ll=1:numElements
                 % Draw the procedural texture as any other texture via 'DrawTexture'
                 Screen('DrawTexture', win,gratingTex,[],[],...
                     [],[],[],[Grey Grey Grey Grey],...
-                    [], [],[alpha(xx,ii),0,...
-                    Radius,centerVals(xx,ii,1),centerVals(xx,ii,2),spatFreq,orient(xx,ii),gama]);
+                    [], [],[alpha(ii,ll),0,...
+                    Radius,centerVals(ii,ll,1),centerVals(ii,ll,2),spatFreq,orient(ii,ll),gama]);
                 % Request stimulus onset
-                elemNum = (xx-1)*(numElements+1)+ii;
-                vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(elemNum);
+                vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(elemNums(ii,ll));
                 vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
             end
-            greyNum = xx*(numElements+1);
+            greyNum = ii;
             usb.strobeEventWord(greyNum);
             vbl = Screen('Flip',win,vbl-ifi/2+waitTime);
         end
@@ -195,7 +202,6 @@ save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
     'DistToScreen','numTests','Test','orient')
 % Close window
-% Screen('CloseAll');
-sio.deleteAllTextures;
+Screen('CloseAll');
 
 end

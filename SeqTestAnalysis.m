@@ -91,7 +91,8 @@ alpha = 0.05;
 for ii=1:numChans
     for jj=1:numTests
         for kk=1:numElements
-            elemNum = (jj-1)*(numElements+1)+kk;
+            mystr = sprintf('%d%d',jj,kk);
+            elemNum = str2double(mystr);
             elemStrobes = strobeTimes(svStrobed==elemNum);
             %check = (jj-1)*numElements+1:jj*numElements;
             for ll=1:reps
