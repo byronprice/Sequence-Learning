@@ -21,7 +21,7 @@ function [Statistic,Response,Latency] = SeqTestAnalysis(AnimalName,Date)
 %
 %Created: 2016/08/10, 24 Cummington, Boston
 % Byron Price
-%Updated: 2016/08/11
+%Updated: 2016/08/15
 %  By: Byron Price
 
 % read in the .plx file
