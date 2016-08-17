@@ -14,16 +14,16 @@ function [] = SequenceTest(AnimalName,holdTime)
 %           folder under '~/CloudStation/ByronExp/SeqExp'
 % Created: 2016/08/04 at 5920 Colchester Road, Fairfax, VA
 %  Byron Price
-% Updated: 2016/08/12
+% Updated: 2016/08/17
 %  By: Byron Price
 
-cd('~/CloudStation/ByronExp/RetinoExp');
+cd('~/CloudStation/ByronExp/Retino');
 load(sprintf('RetinoMap%d.mat',AnimalName));
 
-cd('~/CloudStation/ByronExp/SeqExp');
+cd('~/CloudStation/ByronExp/Seq');
 load('SequenceVars.mat');
 
-directory = '/home/jglab/Documents/MATLAB/Byron/Sequence-Learning';
+directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 
 if nargin < 2
     holdTime = 30;
@@ -203,7 +203,7 @@ Test(2).name = 'Blank second element';
 Test(3).name = 'Same orientations, reversed positions';
 Test(4).name = 'Same positions, reversed orientations';
 
-cd('~/CloudStation/ByronExp/SeqExp');
+cd('~/CloudStation/ByronExp/Seq');
 fileName = sprintf('SeqTest%d_%d.mat',Date,AnimalName);
 save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...

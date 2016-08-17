@@ -17,29 +17,30 @@ function [] = SeqAnWrapper(AnimalName)
 %
 %Created: 2016/07/12, 24 Cummington Mall
 % Byron Price
-%Updated: 2016/08/11
+%Updated: 2016/08/17
 %  By: Byron Price
 
-cd('~/CloudStation/ByronExp/SeqExp');
+cd('~/CloudStation/ByronExp/Seq');
 
 fileStart = sprintf('SeqConv*_%d*',AnimalName);
 fileList = dir(fileStart);
 numDays = length(fileList);
 
-Stats = cell(numDays,1);
-Responses = cell(numDays,1);
-Latencies = cell(numDays,1);
-for ii = 1:numDays
+load(fileList(1).name);
+Stats(1:numDays) = struct(Stat);
+Datas(1:numDays) = struct(Data);
+Latencies(1:numDays) = struct(Latency);
+for ii=2:numDays
     load(fileList(ii).name);
-    Stats{ii} = Statistic;
-    Responses{ii} = Response;
-    Latencies{ii} = Latency;
-    clear Statistic Response Latency;
+    Stats(ii) = Stat;
+    Datas(ii) = Data;
+    Latencies(ii) = Latency;
+    clear Stat Data Latency;
 end
-numChans = size(Responses{1},1);
-numElements = size(Responses{1},2);
-reps = size(Responses{1},3);
-stimLen = size(Responses{1},4);
+numChans = size(Datas(1).VEP,1);
+numElements = size(Datas(1).VEP,2);
+reps = size(Datas(1).VEP,3);
+stimLen = size(Datas(1).VEP,4);
 
 latStart = 0:stimLen:stimLen*(numElements-1);
 for ii=1:numChans
@@ -49,9 +50,9 @@ for ii=1:numChans
         stdRes = [];
         %     lq = [];
         %     uq = [];
-        for zz = 1:numElements
-            meanRes = [meanRes,mean(squeeze(Responses{jj}(ii,zz,:,:)),1)];
-            stdRes = [stdRes,std(squeeze(Responses{jj}(ii,zz,:,:)),0,1)];
+        for kk = 1:numElements
+            meanRes = [meanRes,squeeze(Datas(jj).meanVEP(ii,kk,:))'];
+            stdRes = [stdRes,std(squeeze(Datas(jj).VEP(ii,kk,:,:)),0,1)];
             %         lq = [lq,quantile(squeeze(Response(ii,:,zz,:)),alpha/2,1)];
             %         uq  = [uq,quantile(squeeze(Response(ii,:,zz,:)),1-alpha/2,1)];
         %     lq = meanRes-lq;
@@ -63,8 +64,8 @@ for ii=1:numChans
         title(sprintf('Mean VEP with 95%% Confidence Interval: Channel %d, Day %d',ii,jj));
         ylabel('LFP Voltage (\muV)');xlabel('Time (milliseconds)');
         axis([0 stimLen*numElements -500 500]);
-        hold on; plot(latStart+squeeze(Latencies{jj}(ii,:,1))*sampleFreq,squeeze(Latencies{jj}(ii,:,2)),'vr');
-        plot(latStart+squeeze(Latencies{jj}(ii,:,3))*sampleFreq,squeeze(Latencies{jj}(ii,:,4)),'^k');
+        hold on; plot(latStart+squeeze(Latencies(jj).minTime(ii,:))*sampleFreq,squeeze(Latencies(jj).minVal(ii,:)),'vr');
+        plot(latStart+squeeze(Latencies(jj).maxTime(ii,:))*sampleFreq,squeeze(Latencies(jj).maxVal(ii,:)),'^k');
         hold off;
     end
 end
@@ -75,8 +76,8 @@ for ii=1:numChans
     means = zeros(numDays,numElements);
     stds = zeros(numDays,numElements);
     for jj=1:numDays
-        means(jj,:) = squeeze(Stats{jj}(ii,:,1));
-        stds(jj,:) = squeeze(Stats{jj}(ii,:,2));
+        means(jj,:) = squeeze(Stats(jj).VEPsize(ii,:));
+        stds(jj,:) = squeeze(Stats(jj).VEPsem(ii,:));
     end
     for kk=1:numElements
         subplot(plotRows,2,kk);
@@ -90,10 +91,10 @@ end
 
 % WALD TEST
 alpha = 0.05/(numElements*numChans); % Bonferoni correction
+c = norminv(1-alpha,0,1);
 for ii=1:numChans
     for jj=1:numElements
-        W = (Stats{numDays}(ii,jj,1)-Stats{1}(ii,jj,1))/(sqrt(Stats{numDays}(ii,jj,2)^2+Stats{1}(ii,jj,2)^2));
-        c = norminv(1-alpha,0,1);
+        W = (Stats(numDays).VEPsize(ii,jj)-Stats(1).VEPsize(ii,jj))/(sqrt(Stats(numDays).VEPsem(ii,jj)^2+Stats(1).VEPsem(ii,jj)^2));
         if abs(W) > c
             display(sprintf('Wald Test for Channel %d,Element %d rejects null, mean VEP magnitude greater last day than first day',ii,jj));
         else

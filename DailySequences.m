@@ -9,10 +9,10 @@
 %
 % Created: 2016/08/02, 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/08/11
+% Updated: 2016/08/17
 %  By: Byron Price 
 
-cd('~/CloudStation/ByronExp/SeqExp');
+cd('~/CloudStation/ByronExp/Seq');
 
 today = datetime('today','Format','yyyy-MM-dd');
 today = char(today); today = strrep(today,'-','');
@@ -29,8 +29,8 @@ for ii=1:numFiles
     index = regexp(fileList(ii).name,'_');
     Date = str2double(fileList(ii).name(index-datelen:index-1));
     AnimalName = str2double(fileList(ii).name(index+1:index+idlen));
-    [Statistic,Response,Latency,sampleFreq] = SeqStimAnalysis(AnimalName,Date);
+    [Stat,Data,Latency,sampleFreq] = SeqStimAnalysis(AnimalName,Date);
     save(sprintf('SeqConv%d_%d.mat',Date,AnimalName),...
-            'Statistic','Response','Latency','sampleFreq');
-    clear Statistic Response Latency sampleFreq;
+            'Stat','Data','Latency','sampleFreq');
+    clear Stat Data Latency sampleFreq;
 end

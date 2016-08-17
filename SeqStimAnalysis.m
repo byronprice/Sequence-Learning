@@ -1,4 +1,4 @@
-function [Statistic,Response,Latency,sampleFreq ] = SeqStimAnalysis(AnimalName,Date)
+function [Stat,Data,Latency,sampleFreq ] = SeqStimAnalysis(AnimalName,Date)
 %SeqStimAnalysis.m
 %   Analyze data from one day of experiments for sequence learning.  Mice
 %   are shown ~200 sequences of four elements. Each element is an oriented
@@ -27,12 +27,12 @@ function [Statistic,Response,Latency,sampleFreq ] = SeqStimAnalysis(AnimalName,D
 %
 %Created: 2016/07/11
 % Byron Price
-%Updated: 2016/08/11
+%Updated: 2016/08/17
 %  By: Byron Price
 
 % read in the .plx file
 
-cd('~/CloudStation/ByronExp/SeqExp/');
+cd('~/CloudStation/ByronExp/Seq/');
 EphysFileName = sprintf('SeqData%d_%d',Date,AnimalName); % don't want the
                       % file identifier at this point as MyReadall.m does
                       % that part
@@ -57,11 +57,10 @@ ChanData = zeros(dataLength,numChans);
 preAmpGain = 1;
 for ii=1:numChans
     voltage = 1000.*((allad{1,Chans(ii)}).*SlowPeakV)./(0.5*(2^SlowADResBits)*adgains(Chans(ii))*preAmpGain);
-    temp = smooth(voltage,0.013*sampleFreq);
     n = 30;
     lowpass = 100/(sampleFreq/2); % fraction of Nyquist frequency
     blo = fir1(n,lowpass,'low',hamming(n+1));
-    ChanData(:,ii) = filter(blo,1,temp);
+    ChanData(:,ii) = filter(blo,1,voltage);
 end
 
 timeStamps = 0:1/sampleFreq:dataLength/sampleFreq-1/sampleFreq;
@@ -73,15 +72,6 @@ end
 
 strobeTimes = tsevs{1,strobeStart};
 
-% strobeDiff = strobeTimes(2:end)-strobeTimes(1:end-1);
-% 
-% elementStrobes = [];
-% for ii=1:length(strobeDiff)
-%     if strobeDiff(ii) > (stimTime-0.1) && strobeDiff(ii) < (stimTime+0.1)
-%         elementStrobes = [elementStrobes,strobeTimes(ii)];
-%     end
-% end
-
 % COLLECT LFP RESPONSE TO STIMULI IN ONE MATRIX
 stimLen = round((stimTime+0.1)*sampleFreq); % 150ms per sequence element but we'll take 
           % 200 ms because the peak sometimes occurs beyond 150ms
@@ -89,10 +79,22 @@ minStart = round(0.05*sampleFreq);minEnd = round(0.15*sampleFreq);
 maxStart = round(.1*sampleFreq);maxEnd = round(0.225*sampleFreq);
 minWin = minStart:1:minEnd;
 maxWin = maxStart:1:maxEnd;
+smoothKernel = 4;
 
-Response = zeros(numChans,numElements,reps,stimLen);
-Latency = zeros(numChans,numElements,4);
-Statistic = zeros(numChans,numElements,4);
+Data = struct;
+Data.VEP = zeros(numChans,numElements,reps,stimLen);
+Data.meanVEP = zeros(numChans,numElements,stimLen);
+Latency = struct;
+Latency.minVal = zeros(numChans,numElements);
+Latency.minTime = zeros(numChans,numElements);
+Latency.maxVal = zeros(numChans,numElements);
+Latency.maxTime = zeros(numChans,numElements);
+Stat = struct;
+Stat.VEPsize = zeros(numChans,numElements);
+Stat.VEPsem = zeros(numChans,numElements);
+Stat.lbound = zeros(numChans,numElements);
+Stat.ubound = zeros(numChans,numElements);
+
 alpha = 0.05;
 for ii=1:numChans
     for jj=1:numElements
@@ -102,7 +104,7 @@ for ii=1:numChans
             stimOnset = elemStrobes(kk);
             [~,index] = min(abs(timeStamps-stimOnset));
             temp = ChanData(index:index+stimLen-1,ii);
-            Response(ii,jj,kk,:) = temp;
+            Data.VEP(ii,jj,kk,:) = temp;
         end
         clear check temp;
     end
@@ -113,29 +115,26 @@ for ii=1:numChans
         Tboot = zeros(n,1);
         for kk=1:n
             indeces = random('Discrete Uniform',reps,[reps,1]);
-            temp = squeeze(Response(ii,jj,:,:));temp = temp(indeces,:);
+            temp = squeeze(Data.VEP(ii,jj,:,:));temp = temp(indeces,:);
             meanResponse = mean(temp,1);
             Tboot(kk) = max(meanResponse(maxWin))-min(meanResponse(minWin)); 
         end
-        meanResponse = mean(squeeze(Response(ii,jj,:,:)),1);
-        Statistic(ii,jj,1) = max(meanResponse(maxWin))-min(meanResponse(minWin));Statistic(ii,jj,2) = std(Tboot);
-        Statistic(ii,jj,3) = quantile(Tboot,alpha/2);Statistic(ii,jj,4) = quantile(Tboot,1-alpha/2);
-        [minVal,minInd] = min(meanResponse(minWin));Latency(ii,jj,1) = minStart/sampleFreq+minInd/sampleFreq;
-        Latency(ii,jj,2) = minVal;
-        [maxVal,maxInd] = max(meanResponse(maxWin));Latency(ii,jj,3) = maxStart/sampleFreq+maxInd/sampleFreq;
-        Latency(ii,jj,4) = maxVal;
+        meanResponse = mean(squeeze(Data.VEP(ii,jj,:,:)),1);
+        meanResponse = smooth(meanResponse,smoothKernel);
+        Data.meanVEP(ii,jj,:) = meanResponse;
+        Stat.VEPsize(ii,jj) = max(meanResponse(maxWin))-min(meanResponse(minWin));Stat.VEPsem(ii,jj) = std(Tboot);
+        Stat.lbound(ii,jj) = quantile(Tboot,alpha/2);Stat.ubound(ii,jj) = quantile(Tboot,1-alpha/2);
+        [minVal,minInd] = min(meanResponse(minWin));Latency.minTime(ii,jj) = minStart/sampleFreq+minInd/sampleFreq;
+        Latency.minVal(ii,jj) = minVal;
+        [maxVal,maxInd] = max(meanResponse(maxWin));Latency.maxTime(ii,jj) = maxStart/sampleFreq+maxInd/sampleFreq;
+        Latency.maxVal(ii,jj) = maxVal;
+        clear meanResponse;
     end
-%     figure();
-%     for ll=1:numElements
-%         subplot(ceil(numElements/2),2,ll);histogram(squeeze(Statistic(ii,:,ll)));
-%         title(sprintf('Histogram of Response to Sequence Element %d',ll));
-%         ylabel('Counts');xlabel( ...
-%             sprintf('Test Statistic (\\muV) [max(LFP)-min(LFP) in the %0.2f seconds after sequence element onset]',stimTime));
-%     end
-    
 end
+
 trueStimLen = mean(strobeTimes(svStrobed==2)-strobeTimes(svStrobed==1));
 trueStimLen = round(trueStimLen*sampleFreq);
-Response = Response(:,:,:,1:trueStimLen);
+Data.VEP = Data.VEP(:,:,:,1:trueStimLen);
+Data.meanVEP = Data.meanVEP(:,:,1:trueStimLen);
 end
 
