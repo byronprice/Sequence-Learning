@@ -19,11 +19,13 @@ function [] = SequenceStim(AnimalName,holdTime)
 %           SeqExp folder under '~/CloudStation/ByronExp/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/08/17
+% Updated: 2016/08/18
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/Retino');
 load(sprintf('RetinoMap%d.mat',AnimalName));
+
+centerMass = MapParams.centerMass;
 
 cd('~/CloudStation/ByronExp/Seq');
 load('SequenceVars.mat');
@@ -89,7 +91,7 @@ spatFreq = 1/temp;clear temp;
 
 % extract the angle of the 2-D Gaussian to target the stimulus to the
 % strongest responding locations within the retinotopic map
-[V,D] = eig(squeeze(Sigma(Channel,:,:)));
+[V,D] = eig(squeeze(centerMass.Sigma(Channel,:,:)));
 [~,index] = max(max(D));
 offset = atan2(V(2,index),V(1,index));
 
@@ -99,10 +101,10 @@ end
 
 centerVals = zeros(numElements,2);
 degreeDiv = (2*pi)/numElements;
-centerVals(1,1) = centerMass(Channel,1);centerVals(1,2) = centerMass(Channel,2);
+centerVals(1,1) = centerMass.x(Channel);centerVals(1,2) = centerMass.y(Channel);
 for ii=2:numElements
-    centerVals(ii,1) = centerMass(Channel,1)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
-    centerVals(ii,2) = centerMass(Channel,2)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
+    centerVals(ii,1) = centerMass.x(Channel)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
+    centerVals(ii,2) = centerMass.y(Channel)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
 end
 temp2 = centerVals(2,:);temp3 = centerVals(3,:);
 centerVals(2,:) = centerVals(1,:);
