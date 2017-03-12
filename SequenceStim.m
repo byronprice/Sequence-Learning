@@ -5,7 +5,7 @@ function [] = SequenceStim(AnimalName,holdTime)
 %   recording electrode. This code will coordinate with the Retinotopy.m
 %   code and the saved file RetinoMapAnimalName.mat, e.g.
 %   RetinoMap26881.mat .
-%  Each circle will occupy a 5-degree radius of visual space
+%  Each circle will occupy a 8-degree radius of visual space
 % INPUT: Obligatory-
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
 %
@@ -25,8 +25,8 @@ function [] = SequenceStim(AnimalName,holdTime)
 cd('~/CloudStation/ByronExp/Retino');
 load(sprintf('RetinoMap%d.mat',AnimalName));
 
-centerMass = MapParams.centerMass;
-Channel = MapParams.Channel;
+Channel = targetChannel;
+centerMass = [finalParameters(Channel,2),finalParameters(Channel,3)];
 
 cd('~/CloudStation/ByronExp/Seq');
 load('SequenceVars.mat');
@@ -90,28 +90,36 @@ Radius = round(Radius);
 temp = (tan((1/spatFreq)*pi/180)*(DistToScreen*10))*conv_factor;
 spatFreq = 1/temp;clear temp;
 
-% extract the angle of the 2-D Gaussian to target the stimulus to the
-% strongest responding locations within the retinotopic map
-[V,D] = eig(squeeze(centerMass.Sigma(Channel,:,:)));
-[~,index] = max(max(D));
-offset = atan2(V(2,index),V(1,index));
-
-if offset < 0 
-    offset = offset+2*pi;
-end
+% % extract the angle of the 2-D Gaussian to target the stimulus to the
+% % strongest responding locations within the retinotopic map
+% [V,D] = eig(squeeze(centerMass.Sigma(Channel,:,:)));
+% [~,index] = max(max(D));
+% offset = atan2(V(2,index),V(1,index));
+% 
+% if offset < 0 
+%     offset = offset+2*pi;
+% end
+% 
+% centerVals = zeros(numElements,2);
+% degreeDiv = (2*pi)/numElements;
+% centerVals(1,1) = centerMass.x(Channel);centerVals(1,2) = centerMass.y(Channel);
+% for ii=2:numElements
+%     centerVals(ii,1) = centerMass.x(Channel)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
+%     centerVals(ii,2) = centerMass.y(Channel)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
+% end
+% temp2 = centerVals(2,:);temp3 = centerVals(3,:);
+% centerVals(2,:) = centerVals(1,:);
+% centerVals(3,:) = temp2;
+% centerVals(1,:) = temp3;
 
 centerVals = zeros(numElements,2);
-degreeDiv = (2*pi)/numElements;
-centerVals(1,1) = centerMass.x(Channel);centerVals(1,2) = centerMass.y(Channel);
-for ii=2:numElements
-    centerVals(ii,1) = centerMass.x(Channel)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
-    centerVals(ii,2) = centerMass.y(Channel)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
-end
-temp2 = centerVals(2,:);temp3 = centerVals(3,:);
-centerVals(2,:) = centerVals(1,:);
-centerVals(3,:) = temp2;
-centerVals(1,:) = temp3;
+centerVals(2,1) = centerMass(1);centerVals(:,2) = centerMass(2);
 
+centerVals(1,1) = centerVals(2,1)-2*Radius;
+centerVals(3,1) = centerVals(2,1)+2*Radius;
+
+
+waitTimes = waitTime-0.1+exprnd(0.1,[reps,1]);
 estimatedTime = ((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 
@@ -125,7 +133,7 @@ White = 1;
 
 Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-orient = [150,60,30,120].*pi./180;
+orient = rand*pi;
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
@@ -133,6 +141,7 @@ usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
+count = 1;
 vbl = Screen('Flip',win);
 for yy=1:blocks  
     for zz = 1:reps/blocks
@@ -142,13 +151,13 @@ for yy=1:blocks
             Screen('DrawTexture', win,gratingTex, [],[],...
                 [],[],[],[Grey Grey Grey Grey],...
                 [], [],[White,Black,...
-                Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,orient(ii),0]);
+                Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,orient,0]);
             % Request stimulus onset
             vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(ii);
             vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
         end
-        usb.strobeEventWord(5);
-        vbl = Screen('Flip',win,vbl-ifi/2+waitTime);
+        usb.strobeEventWord(5);count = count+1;
+        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
     end
     if yy ~= blocks
         usb.strobeEventWord(0);
