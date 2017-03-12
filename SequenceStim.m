@@ -19,11 +19,11 @@ function [] = SequenceStim(AnimalName,holdTime)
 %           SeqExp folder under '~/CloudStation/ByronExp/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/08/18
+% Updated: 2017/03/12
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/Retino');
-load(sprintf('RetinoMap%d.mat',AnimalName));
+load(sprintf('RetinoMap_%d.mat',AnimalName));
 
 Channel = targetChannel;
 centerMass = [finalParameters(Channel,2),finalParameters(Channel,3)];
@@ -119,7 +119,7 @@ centerVals(1,1) = centerVals(2,1)-2*Radius;
 centerVals(3,1) = centerVals(2,1)+2*Radius;
 
 
-waitTimes = waitTime-0.1+exprnd(0.1,[reps,1]);
+waitTimes = waitTime-0.5+rand([reps,1]);
 estimatedTime = ((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 
@@ -133,12 +133,11 @@ White = 1;
 
 Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
-orient = rand*pi;
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
 usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
-WaitSecs(holdTime);
+WaitSecs(10);
 
 % Animation loop
 count = 1;
@@ -170,7 +169,7 @@ Priority(0);
 
 cd('~/CloudStation/ByronExp/Seq');
 fileName = sprintf('SeqStim%d_%d.mat',Date,AnimalName);
-save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
+save(fileName,'centerVals','Radius','degreeRadius','reps','stimTime','numElements',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
     'DistToScreen','orient')
 % Close window
