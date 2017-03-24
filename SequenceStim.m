@@ -5,7 +5,7 @@ function [] = SequenceStim(AnimalName,holdTime)
 %   recording electrode. This code will coordinate with the Retinotopy.m
 %   code and the saved file RetinoMapAnimalName.mat, e.g.
 %   RetinoMap26881.mat .
-%  Each circle will occupy a 8-degree radius of visual space
+%  Each circle will occupy a 10-degree radius of visual space
 % INPUT: Obligatory-
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
 %
@@ -19,14 +19,13 @@ function [] = SequenceStim(AnimalName,holdTime)
 %           SeqExp folder under '~/CloudStation/ByronExp/SeqExp'
 % Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2017/03/12
+% Updated: 2017/03/15
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/Retino');
 load(sprintf('RetinoMap_%d.mat',AnimalName));
 
-Channel = targetChannel;
-centerMass = [finalParameters(Channel,2),finalParameters(Channel,3)];
+centerMass = [finalParameters(targetChannel,2),finalParameters(targetChannel,3)];
 
 cd('~/CloudStation/ByronExp/Seq');
 load('SequenceVars.mat');
@@ -118,7 +117,6 @@ centerVals(2,1) = centerMass(1);centerVals(:,2) = centerMass(2);
 centerVals(1,1) = centerVals(2,1)-2*Radius;
 centerVals(3,1) = centerVals(2,1)+2*Radius;
 
-
 waitTimes = waitTime-0.5+rand([reps,1]);
 estimatedTime = ((stimTime*numElements+waitTime)*reps+blocks*holdTime)/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
@@ -140,22 +138,43 @@ usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
 WaitSecs(10);
 
 % Animation loop
-count = 1;
+count = 0;
 vbl = Screen('Flip',win);
 for yy=1:blocks  
-    for zz = 1:reps/blocks
-        vbl = Screen('Flip',win,vbl+ifi/2);
-        for ii=1:numElements
-            % Draw the procedural texture as any other texture via 'DrawTexture'
-            Screen('DrawTexture', win,gratingTex, [],[],...
-                [],[],[],[Grey Grey Grey Grey],...
-                [], [],[White,Black,...
-                Radius,centerVals(ii,1),centerVals(ii,2),spatFreq,orient,0]);
-            % Request stimulus onset
-            vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(ii);
-            vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
-        end
-        usb.strobeEventWord(5);count = count+1;
+    vbl = Screen('Flip',win);
+    zz = 0;
+    while zz < reps/blocks
+        % skip the for loop here because it destroys the timing on the
+        %  final element
+
+            % ELEMENT 1
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(1,1),centerVals(1,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(1);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 2
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(2,1),centerVals(2,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(2);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 3
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(3,1),centerVals(3,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win,vbl);usb.strobeEventWord(3);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        usb.strobeEventWord(numElements+1);count = count+1;zz = zz+1;
         vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
     end
     if yy ~= blocks
@@ -168,10 +187,10 @@ usb.stopRecording;
 Priority(0);
 
 cd('~/CloudStation/ByronExp/Seq');
-fileName = sprintf('SeqStim%d_%d.mat',Date,AnimalName);
+fileName = sprintf('SeqTrajStim%d_%d.mat',Date,AnimalName);
 save(fileName,'centerVals','Radius','degreeRadius','reps','stimTime','numElements',...
-    'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
-    'DistToScreen','orient')
+    'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
+    'DistToScreen','orientation','targetChannel')
 % Close window
 Screen('CloseAll');
 

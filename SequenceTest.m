@@ -1,6 +1,7 @@
 function [] = SequenceTest(AnimalName,holdTime)
 %SequenceTest.m
-%  Test after running SequenceStim.m for three days.
+%  Test day for SequenceStim experiment ... see SequenceStim.m
+%  Each circle will occupy a 10-degree radius of visual space
 % INPUT: Obligatory-
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
 %
@@ -9,19 +10,18 @@ function [] = SequenceTest(AnimalName,holdTime)
 % 
 %        see file SequenceVars.mat for other changeable presets
 %
-% OUTPUT: a file with stimulus parameters named SeqTestDate_AnimalName
-%           e.g. SeqTest20160708_12345.mat to be saved in CloudStation's SeqExp
-%           folder under '~/CloudStation/ByronExp/SeqExp'
-% Created: 2016/08/04 at 5920 Colchester Road, Fairfax, VA
+% OUTPUT: a file with stimulus parameters named SeqStimDate_AnimalName
+%           e.g. SeqStim20160708_12345.mat to be saved in CloudStation's 
+%           SeqExp folder under '~/CloudStation/ByronExp/SeqExp'
+% Created: 2016/07/25 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2016/08/18
+% Updated: 2017/03/15
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/Retino');
-load(sprintf('RetinoMap%d.mat',AnimalName));
+load(sprintf('RetinoMap_%d.mat',AnimalName));
 
-centerMass = MapParams.centerMass;
-Channel = MapParams.Channel;
+centerMass = [finalParameters(targetChannel,2),finalParameters(targetChannel,3)];
 
 cd('~/CloudStation/ByronExp/Seq');
 load('SequenceVars.mat');
@@ -31,6 +31,7 @@ directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 if nargin < 2
     holdTime = 30;
 end
+
 reps = reps-mod(reps,blocks);
 
 Date = datetime('today','Format','yyyy-MM-dd');
@@ -43,27 +44,13 @@ AssertOpenGL;
 
 usb = usb1208FSPlusClass;
 display(usb);
+
 WaitSecs(10);
 
-% usb = ttlInterfaceClass.getTTLInterface;
-% if ~usb.validateInterface
-%     handleWarning('TTL Interface validation failed',true,'TTL Warning',[],true);
-% end
-% usb.stopRecording; % for some reason, doesn't start unless previously stopped
+% Choose screen with maximum id - the secondary display:
+screenid = max(Screen('Screens'));
 
-% sio = screenInterfaceClass.returnInterface;
-% sio.openScreen;
-% win = sio.window;
-% ifi = sio.slack*2;
-% mp = sio.getMonitorProfile;
-% w_pixels = mp.cols;
-% h_pixels = mp.rows;
-% w_mm = 1e3*mp.screen_width;
-% h_mm = 1e3*mp.screen_height;
-
-% % Choose screen with maximum id - the secondary display:
-screenid = max(Screen('Screens')); 
-
+% 
 % % Open a fullscreen onscreen window on that display, choose a background
 % % color of 127 = gray with 50% max intensity; 0 = black;255 = white
 background = 127;
@@ -75,14 +62,14 @@ Screen('LoadNormalizedGammaTable',win,gammaTable);
 % Switch color specification to use the 0.0 - 1.0 range
 Screen('ColorRange', win, 1);
 
-% % Query window size in pixels
+% Query window size in pixels
 [w_pixels, h_pixels] = Screen('WindowSize', win);
-% 
-% % Retrieve monitor refresh duration
+
+% Retrieve monitor refresh duration
 ifi = Screen('GetFlipInterval', win);
 
-dgshader = [directory '/SequenceTest.vert.txt'];
-GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceTest.frag.txt'] }, 1);
+dgshader = [directory '/SequenceStim.vert.txt'];
+GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim.frag.txt'] }, 1);
 gratingTex = Screen('SetOpenGLTexture', win, [], 0, GL.TEXTURE_3D,w_pixels,...
     h_pixels, 1, GratingShader);
 
@@ -99,50 +86,36 @@ Radius = round(Radius);
 temp = (tan((1/spatFreq)*pi/180)*(DistToScreen*10))*conv_factor;
 spatFreq = 1/temp;clear temp;
 
-numTests = 4;
-% extract the angle of the 2-D Gaussian to target the stimulus to the
-% strongest responding locations within the retinotopic map
-[V,D] = eig(squeeze(centerMass.Sigma(Channel,:,:)));
-[~,index] = max(max(D));
-offset = atan2(V(2,index),V(1,index));
+% % extract the angle of the 2-D Gaussian to target the stimulus to the
+% % strongest responding locations within the retinotopic map
+% [V,D] = eig(squeeze(centerMass.Sigma(Channel,:,:)));
+% [~,index] = max(max(D));
+% offset = atan2(V(2,index),V(1,index));
+% 
+% if offset < 0 
+%     offset = offset+2*pi;
+% end
+% 
+% centerVals = zeros(numElements,2);
+% degreeDiv = (2*pi)/numElements;
+% centerVals(1,1) = centerMass.x(Channel);centerVals(1,2) = centerMass.y(Channel);
+% for ii=2:numElements
+%     centerVals(ii,1) = centerMass.x(Channel)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
+%     centerVals(ii,2) = centerMass.y(Channel)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
+% end
+% temp2 = centerVals(2,:);temp3 = centerVals(3,:);
+% centerVals(2,:) = centerVals(1,:);
+% centerVals(3,:) = temp2;
+% centerVals(1,:) = temp3;
 
-if offset < 0 
-    offset = offset+2*pi;
-end
+centerVals = zeros(numElements,2);
+centerVals(2,1) = centerMass(1);centerVals(:,2) = centerMass(2);
 
-centerVals = zeros(numTests,numElements,2);
-degreeDiv = (2*pi)/numElements;
-centerVals(1,1,1) = centerMass.x(Channel);centerVals(1,1,2) = centerMass.y(Channel);
-for ii=2:numElements
-    centerVals(1,ii,1) = centerMass.x(Channel)+cos(degreeDiv*(ii-2)+offset)*2*Radius;
-    centerVals(1,ii,2) = centerMass.y(Channel)+sin(degreeDiv*(ii-2)+offset)*2*Radius;
-end
-temp2 = centerVals(1,2,:);temp3 = centerVals(1,3,:);
-centerVals(1,2,:) = centerVals(1,1,:);
-centerVals(1,3,:) = temp2;
-centerVals(1,1,:) = temp3;
+centerVals(1,1) = centerVals(2,1)-2*Radius;
+centerVals(3,1) = centerVals(2,1)+2*Radius;
 
-% first test, original sequence
-% second test, original sequence, but missing second element
-% third test, reversed positions, original orientation order
-% fourth test, reveresed orientations, original position order
-alpha = ones(numTests,numElements);
-alpha(2,2) = 0; % alpha mixing for second test, second element
-
-orient = zeros(numTests,numElements);
-temp = [150,60,30,120].*pi./180;
-orient(1,:) = temp;
-orient(2,:) = temp;
-orient(3,:) = temp;
-orient(4,:) = fliplr(temp);
-centerVals(2,:,1) = centerVals(1,:,1);
-centerVals(2,:,2) = centerVals(1,:,2);
-centerVals(3,:,1) = fliplr(centerVals(1,:,1));
-centerVals(3,:,2) = fliplr(centerVals(1,:,2));
-centerVals(4,:,1) = centerVals(1,:,1);
-centerVals(4,:,2) = centerVals(1,:,2);
-
-estimatedTime = (numTests*((stimTime*numElements+waitTime)*reps+blocks*holdTime))/60;
+waitTimes = waitTime-0.5+rand([reps,1]);
+estimatedTime = ((stimTime*numElements+waitTime)*3*reps+blocks*holdTime)/60;
 display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 
 % Define first and second ring color as RGBA vector with normalized color
@@ -150,67 +123,151 @@ display(sprintf('\nEstimated time: %3.2f minutes',estimatedTime));
 % create all textures in the same window (win), each of the appropriate
 % size
 Grey = 0.5;
+Black = 0;
+White = 1;
 
 Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 % Perform initial flip to gray background and sync us to the retrace:
 Priority(9);
 
-% we have event words from 0 to 255, so 3 tests and greater than 10
-% elements would break the code, but up to 9 tests and 9 elements each
-% would be fine
-elemNums = zeros(numTests,numElements);
-for ii=1:numTests
-    for jj=1:numElements
-    mystr = sprintf('%d%d',ii,jj);
-    elemNums(ii,jj) = str2double(mystr);
-    end
-end
+usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
+WaitSecs(10);
 
-usb.startRecording;
-WaitSecs(1);
-usb.strobeEventWord(0);
-WaitSecs(holdTime);
-
-% Animation loop
+% Original STIMULUS
+count = 0;
 vbl = Screen('Flip',win);
-for ii=1:numTests
-    for jj=1:blocks
-        for kk= 1:reps/blocks
-            vbl = Screen('Flip',win,vbl+ifi/2);
-            for ll=1:numElements
-                % Draw the procedural texture as any other texture via 'DrawTexture'
-                Screen('DrawTexture', win,gratingTex,[],[],...
-                    [],[],[],[Grey Grey Grey Grey],...
-                    [], [],[alpha(ii,ll),0,...
-                    Radius,centerVals(ii,ll,1),centerVals(ii,ll,2),spatFreq,orient(ii,ll),0]);
-                % Request stimulus onset
-                vbl = Screen('Flip', win,vbl+ifi/2);usb.strobeEventWord(elemNums(ii,ll));
-                vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
-            end
-            greyNum = ii;
-            usb.strobeEventWord(greyNum);
-            vbl = Screen('Flip',win,vbl-ifi/2+waitTime);
-        end
-        usb.strobeEventWord(0);
-        vbl = Screen('Flip',win,vbl-ifi/2+holdTime);
+for yy=1:blocks  
+    zz = 0;
+    while zz < reps/blocks
+        % skip the for loop here because it destroys the timing on the
+        %  final element
+
+            % ELEMENT 1
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(1,1),centerVals(1,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(1);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 2
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(2,1),centerVals(2,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(2);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 3
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(3,1),centerVals(3,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win,vbl);usb.strobeEventWord(3);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        usb.strobeEventWord(numElements+1);count = count+1;zz = zz+1;
+        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
     end
+    usb.strobeEventWord(0);
+    vbl = Screen('Flip',win,vbl-ifi/2+holdTime);
 end
+
+% OMITTED ELEMENT
+count = 0;
+vbl = Screen('Flip',win);
+for yy=1:blocks  
+    zz = 0;
+    while zz < reps/blocks
+        % skip the for loop here because it destroys the timing on the
+        %  final element
+
+            % ELEMENT 1
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(1,1),centerVals(1,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(5);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 2 ... blank
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(6);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 3
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(3,1),centerVals(3,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win,vbl);usb.strobeEventWord(7);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        usb.strobeEventWord(8);count = count+1;zz = zz+1;
+        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
+    end
+    usb.strobeEventWord(0);
+    vbl = Screen('Flip',win,vbl-ifi/2+holdTime);
+end
+
+% STIM IN REVERSE
+count = 0;
+vbl = Screen('Flip',win);
+for yy=1:blocks  
+    zz = 0;
+    while zz < reps/blocks
+        % skip the for loop here because it destroys the timing on the
+        %  final element
+
+            % ELEMENT 1
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(3,1),centerVals(3,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(9);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 2 ... blank
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(2,1),centerVals(2,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win);usb.strobeEventWord(10);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        % ELEMENT 3
+        Screen('DrawTexture', win,gratingTex, [],[],...
+            [],[],[],[Grey Grey Grey Grey],...
+            [], [],[White,Black,...
+            Radius,centerVals(1,1),centerVals(1,2),spatFreq,orientation,0]);
+        % Request stimulus onset
+        vbl = Screen('Flip', win,vbl);usb.strobeEventWord(11);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimTime);
+
+        usb.strobeEventWord(12);count = count+1;zz = zz+1;
+        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
+    end
+    usb.strobeEventWord(0);
+    vbl = Screen('Flip',win,vbl-ifi/2+holdTime);
+end
+
 WaitSecs(2);
 usb.stopRecording;
 Priority(0);
 
-Test = struct('name',cell(numTests,1));
-Test(1).name = 'Original';
-Test(2).name = 'Blank second element';
-Test(3).name = 'Same orientations, reversed positions';
-Test(4).name = 'Same positions, reversed orientations';
-
 cd('~/CloudStation/ByronExp/Seq');
-fileName = sprintf('SeqTest%d_%d.mat',Date,AnimalName);
-save(fileName,'centerVals','Radius','reps','stimTime','numElements',...
-    'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTime','holdTime',...
-    'DistToScreen','numTests','Test','orient')
+fileName = sprintf('SeqTrajTestStim%d_%d.mat',Date,AnimalName);
+save(fileName,'centerVals','Radius','degreeRadius','reps','stimTime','numElements',...
+    'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
+    'DistToScreen','orientation','targetChannel')
 % Close window
 Screen('CloseAll');
 
