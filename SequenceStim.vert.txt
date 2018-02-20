@@ -13,6 +13,7 @@ varying float CenterX;
 varying float CenterY;
 varying float spatFreq;
 varying float orientation;
+varying float phase;
 
 void main()
 {
@@ -31,5 +32,6 @@ void main()
     CenterX = auxParameters0[3];
     CenterY = auxParameters1[0];
     spatFreq = auxParameters1[1];
-    orientation = auxParameters1[2];
+    orientation = auxParameters1[2];  
+    phase = auxParameters1[3];
 }
