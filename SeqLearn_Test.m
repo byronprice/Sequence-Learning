@@ -7,6 +7,9 @@ function [] = SeqLearn_Test(AnimalName,holdTime)
 
 %   2-element sequences will also be presented (132 possible combinations)
 
+% could also try with the Berry Patch stimulus (choose say 10 unique
+%  images and then you have 90 possible combinations)
+
 % INPUT: Obligatory-
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
 %
