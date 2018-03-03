@@ -1,34 +1,38 @@
-function [] = SeqLearn_Test(AnimalName,holdTime)
-%SeqLearn_Test.m
-%  Display static full-field sinusoidal gratings for 100-300ms
+function [] = SeqLearn(AnimalName,Day,holdTime)
+%SeqLearn.m
+%  Display static full-field sinusoidal gratings for 150ms
 %   12 unique elements (0 to 165 in increments of 15 degrees)
-%   each element will be displayed for 100 to 300 msec (randomly chosen),
+%   each element will be displayed for 150 ms
 %   followed by a 0.5 to 1.5 second pause (uniform random distribution)
-
-%   2-element sequences will also be presented (132 possible combinations)
 
 % could also try with the Berry Patch stimulus (choose say 10 unique
 %  images and then you have 90 possible combinations)
 
 % INPUT: Obligatory-
 %        AnimalName - animal's unique identifier as a number, e.g. 45602
+%        Day - experimental day
 %
 %        Optional- 
 %        holdTime - amount of time to wait between blocks of about 50 stimuli
+% 
 %
 % OUTPUT: a file with stimulus parameters named SeqStimDate_AnimalName
-%           e.g. SeqTestStim20160708_12345.mat to be saved in CloudStation's 
-%           Seq folder under '~/CloudStation/ByronExp/Seq'
-% Created: 2018/02/20 at 24 Cummington, Boston
+%           e.g. SeqStim20160708_12345.mat to be saved in CloudStation's 
+%           Seq folder under '~/CloudStation/ByronExp/SEQ'
+% Created: 2018/03/03 at 24 Cummington, Boston
 %  Byron Price
 % Updated: 2018/03/03
 %  By: Byron Price
 
-blocks = 60;
-repsPerBlock = 25;
-numElements = [1,2];
-orientations = (0:15:165).*pi./180;numOrient = length(orientations);
-stimTimes = (100:16.66666667:300)./1000;
+cd('~/CloudStation/ByronExp/SEQ');
+
+blocks = 4;
+repsPerBlock = 50;
+numElements = 2;
+orientations = [15,30,45,60,75,105,120,135,150,165].*pi./180;
+orientations = orientations(randperm(length(orientations),numElements));
+numOrient = numElements;
+stimTimes = 150/1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
@@ -99,15 +103,11 @@ waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
 stimParams = cell(repsPerBlock*blocks,5);
 
 for ii=1:blocks
-   ind1 = randperm(length(numElements),1);
-   numEl = numElements(ind1);
-   stimParams{ii,1} = numEl;
-   ind2 = random('Discrete Uniform',numOrient,[numEl,1]);
-   stimParams{ii,2} = orientations(ind2);
-   ind3 = randperm(length(stimTimes),1);
-   stimParams{ii,3} = stimTimes(ind3);
-   stimParams{ii,4} = pi.*ones(numEl,1);%2*pi*rand([numEl,1]);
-   stimParams{ii,5} = ind2;
+   stimParams{ii,1} = numElements;
+   stimParams{ii,2} = orientations;
+   stimParams{ii,3} = stimTimes;
+   stimParams{ii,4} = pi.*ones(numElements,1);%2*pi*rand([numEl,1]);
+   stimParams{ii,5} = [1,2];
 end
 
 offsetGrey = numOrient+1;
@@ -161,7 +161,7 @@ for yy=1:blocks
         vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count)-currentPause);
         zz = zz+1;count = count+1;
     end
-    if mod(yy,blocks/4)==0
+    if yy~=blocks
         timeIncrement = 1;
         totalTime = timeIncrement;
         while totalTime<holdTime
@@ -175,11 +175,11 @@ WaitSecs(1);
 usb.stopRecording;
 Priority(0);
 
-cd('~/CloudStation/ByronExp/Seq');
-fileName = sprintf('SeqTestStim%d_%d.mat',Date,AnimalName);
+cd('~/CloudStation/ByronExp/SEQ');
+fileName = sprintf('SeqStim%d-%d_%d.mat',Day,Date,AnimalName);
 save(fileName,'repsPerBlock','blocks','stimParams','stimTimes',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
-    'DistToScreen','orientations','offsetGrey')
+    'DistToScreen','orientations','offsetGrey','Day')
 % Close window
 Screen('CloseAll');
 
