@@ -38,7 +38,7 @@ ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 200;
+degreeRadius = 179;
 stimOnTime = 50/1000;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
@@ -113,7 +113,7 @@ end
 
 offsetGrey = numOrient+1;
 
-estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks+5*holdTime+5)/60;
+estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks+blocks*holdTime+2)/60;
 fprintf('\nEstimated time: %3.2f minutes',estimatedTime);
 
 % Define first and second ring color as RGBA vector with normalized color
@@ -158,8 +158,9 @@ for yy=1:blocks
             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
             ww = ww+1;
         end
-        vbl = Screen('Flip',win,vbl-ifi/2+(currentPause-stimOnTime));usb.strobeEventWord(offsetGrey);
-        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count)-currentPause);
+        usb.strobeEventWord(offsetGrey);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
         zz = zz+1;count = count+1;
     end
     if yy~=blocks

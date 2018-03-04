@@ -157,8 +157,9 @@ for yy=1:blocks
             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
             ww = ww+1;
         end
-        vbl = Screen('Flip',win,vbl-ifi/2+(currentPause-stimOnTime));usb.strobeEventWord(offsetGrey);
-        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count)-currentPause);
+        usb.strobeEventWord(offsetGrey);
+        vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+        vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
         zz = zz+1;count = count+1;
     end
     if mod(yy,blocks/4)==0
