@@ -115,7 +115,7 @@ if Day<5
     offsetGrey = numOrient+1;
     
     estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks+blocks*holdTime+2)/60;
-    fprintf('\nEstimated time: %3.2f minutes',estimatedTime);
+    fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
     
     % Define first and second ring color as RGBA vector with normalized color
     % component range between 0.0 and 1.0, based on Contrast between 0 and 1
@@ -240,7 +240,7 @@ elseif Day==5
     
     estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks*conditions+...
         conditions*blocks*holdTime+2)/60;
-    fprintf('\nEstimated time: %3.2f minutes',estimatedTime);
+    fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
     
     % Define first and second ring color as RGBA vector with normalized color
     % component range between 0.0 and 1.0, based on Contrast between 0 and 1

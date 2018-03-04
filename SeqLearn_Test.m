@@ -113,7 +113,7 @@ end
 offsetGrey = numOrient+1;
 
 estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks+5*holdTime+5)/60;
-fprintf('\nEstimated time: %3.2f minutes',estimatedTime);
+fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
 
 % Define first and second ring color as RGBA vector with normalized color
 % component range between 0.0 and 1.0, based on Contrast between 0 and 1
