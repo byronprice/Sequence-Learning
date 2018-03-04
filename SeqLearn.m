@@ -42,7 +42,7 @@ stimOnTime = 50/1000;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 
-if nargin < 2
+if nargin < 3
     holdTime = 30;
 end
 
