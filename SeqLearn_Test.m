@@ -132,10 +132,10 @@ usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
-count = 0;
+count = 1;
 vbl = Screen('Flip',win);
 for yy=1:blocks  
-    numEl = stimParams{y,1};
+    numEl = stimParams{yy,1};
     currentOrient = stimParams{yy,2};
     currentPause = stimParams{yy,3};
     currentPhase = stimParams{yy,4};

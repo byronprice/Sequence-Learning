@@ -29,8 +29,9 @@ cd('~/CloudStation/ByronExp/SEQ');
 blocks = 4;
 repsPerBlock = 50;
 numElements = 2;
-orientations = [15,30,45,60,75,105,120,135,150,165].*pi./180;
-orientations = orientations(randperm(length(orientations),numElements));
+% orientations = [15,30,45,60,75,105,120,135,150,165].*pi./180;
+% orientations = orientations(randperm(length(orientations),numElements));
+orientations = [60,150];
 numOrient = numElements;
 stimTimes = 150/1000;
 ISI = [0.5,1.5];
@@ -132,10 +133,10 @@ usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
 WaitSecs(holdTime);
 
 % Animation loop
-count = 0;
+count = 1;
 vbl = Screen('Flip',win);
 for yy=1:blocks  
-    numEl = stimParams{y,1};
+    numEl = stimParams{yy,1};
     currentOrient = stimParams{yy,2};
     currentPause = stimParams{yy,3};
     currentPhase = stimParams{yy,4};
