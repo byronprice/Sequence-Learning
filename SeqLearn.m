@@ -31,14 +31,14 @@ repsPerBlock = 50;
 numElements = 2;
 % orientations = [15,30,45,60,75,105,120,135,150,165].*pi./180;
 % orientations = orientations(randperm(length(orientations),numElements));
-orientations = [60,150]; % .*pi/180
+orientations = [60,150].*pi/180;
 numOrient = numElements;
 stimTimes = 150/1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 179;
+degreeRadius = 15;
 stimOnTime = 50/1000;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
@@ -183,9 +183,8 @@ elseif Day==5
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
     stimParams = cell(conditions,blocks,5);
     
-    A = orientations(1);B = orientations(2);C = orientations(1)-35;
-    D = orientations(2)+20;
-    % multiply by pi/180 later
+    A = orientations(1);B = orientations(2);C = orientations(1)-35.*pi/180;
+    D = orientations(2)+20.*pi/180;
     
     order = randperm(conditions,conditions);
     for jj=1:blocks
