@@ -38,7 +38,7 @@ ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 15;
+degreeRadius = 179;
 radianRadius = degreeRadius*pi/180;
 stimOnTime = 150/1000;
 
@@ -97,7 +97,7 @@ conv_factor = 1/conv_factor;
 spatFreq = spatFreq*180/pi;
 DistToScreenPix = DistToScreen*10/mmPerPixel;
 
-centerVals = [w_pixels/2,100/mmPerPixel];
+centerVals = [w_pixels/2,90/mmPerPixel];
 centerPos = [10,20].*pi/180;
 
 if Day<5
