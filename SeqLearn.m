@@ -33,13 +33,14 @@ numElements = 2;
 % orientations = orientations(randperm(length(orientations),numElements));
 orientations = [60,150].*pi/180;
 numOrient = numElements;
-stimTimes = 1000/1000;
+stimTimes = 150/1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 15*pi/180;
-stimOnTime = 500/1000;
+degreeRadius = 15;
+radianRadius = degreeRadius*pi/180;
+stimOnTime = 150/1000;
 
 % directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 directory = '~/CloudStation/ByronExp/SEQ';
@@ -93,17 +94,11 @@ conv_factor = (w_mm/w_pixels+h_mm/h_pixels)/2;
 mmPerPixel = conv_factor;
 conv_factor = 1/conv_factor;
 
-% perform unit conversions
-Radius = (tan((degreeRadius/2)*pi/180)*(DistToScreen*10*2))*conv_factor; % get number of pixels
-     % that degreeRadius degrees of visual space will occupy
-% temp = (tan(((1/spatFreq)/2)*pi/180)*(DistToScreen*10*2))*conv_factor;
-% spatFreq = 1/temp;clear temp;
-
 spatFreq = spatFreq*180/pi;
 DistToScreenPix = DistToScreen*10/mmPerPixel;
 
 centerVals = [w_pixels/2,100/mmPerPixel];
-centerPos = [0,0].*pi/180;
+centerPos = [10,20].*pi/180;
 
 if Day<5
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
@@ -157,10 +152,10 @@ if Day<5
                 Screen('DrawTexture', win,gratingTex, [],[],...
                     [],[],[],[Grey Grey Grey Grey],...
                     [], [],[White,Black,...
-                    degreeRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
+                    radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
                 % Request stimulus onset
-                vbl = Screen('Flip',win,vbl-ifi/2+(currentPause-stimOnTime));
+                vbl = Screen('Flip',win,vbl+ifi/2+(currentPause-stimOnTime));
                 usb.strobeEventWord(currentEvent(ww+1));
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 ww = ww+1;
