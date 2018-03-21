@@ -38,7 +38,7 @@ ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 179;
+degreeRadius = 15*pi/180;
 stimOnTime = 500/1000;
 
 % directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
@@ -103,7 +103,7 @@ spatFreq = spatFreq*180/pi;
 DistToScreenPix = DistToScreen*10/mmPerPixel;
 
 centerVals = [w_pixels/2,100/mmPerPixel];
-centerPos = [w_pixels/2,h_pixels/2];
+centerPos = [0,0].*pi/180;
 
 if Day<5
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
@@ -157,7 +157,7 @@ if Day<5
                 Screen('DrawTexture', win,gratingTex, [],[],...
                     [],[],[],[Grey Grey Grey Grey],...
                     [], [],[White,Black,...
-                    Radius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
+                    degreeRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
                 % Request stimulus onset
                 vbl = Screen('Flip',win,vbl-ifi/2+(currentPause-stimOnTime));
@@ -165,7 +165,6 @@ if Day<5
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 ww = ww+1;
             end
-            currentOrient(2) = currentOrient(2)+10*pi/180;
             usb.strobeEventWord(offsetGrey);
             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
             vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
