@@ -31,14 +31,14 @@ repsPerBlock = 50;
 numElements = 2;
 % orientations = [15,30,45,60,75,105,120,135,150,165].*pi./180;
 % orientations = orientations(randperm(length(orientations),numElements));
-orientations = [105,75].*pi/180;
+orientations = [105,45].*pi/180;
 numOrient = numElements;
 stimTimes = 150/1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 50;
+degreeRadius = 90;
 radianRadius = degreeRadius*pi/180;
 stimOnTime = 150/1000;
 
@@ -185,7 +185,7 @@ elseif Day==5
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
     stimParams = cell(conditions,blocks,5);
     
-    A = orientations(1);B = orientations(2);C = 45*pi/180;
+    A = orientations(1);B = orientations(2);C = 75*pi/180;
     D = 165*pi/180;E = 15*pi/180;F = 135*pi/180;
     Aphase = 0;Bphase = pi/2;Cphase = 2*pi*rand;Dphase = 2*pi*rand;
     Ephase = 2*pi*rand;Fphase = 2*pi*rand;
