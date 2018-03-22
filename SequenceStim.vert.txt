@@ -3,6 +3,7 @@
 /* Attributes passed from Screen(): See the ProceduralShadingAPI.m file for infos: */
 attribute vec4 auxParameters0;
 attribute vec4 auxParameters1;
+attribute vec4 auxParameters2;
 attribute vec4 modulateColor;
 
 varying vec4 White;
@@ -14,6 +15,9 @@ varying float CenterY;
 varying float spatFreq;
 varying float orientation;
 varying float phase;
+varying float screenDist;
+varying float CenterX2;
+varying float CenterY2;
 
 void main()
 {
@@ -34,4 +38,7 @@ void main()
     spatFreq = auxParameters1[1];
     orientation = auxParameters1[2];  
     phase = auxParameters1[3];
+    screenDist = auxParameters2[0];
+    CenterX2 = auxParameters2[1];
+    CenterY2 = auxParameters2[2];
 }
