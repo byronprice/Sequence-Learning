@@ -21,7 +21,7 @@ function [] = SeqLearn(AnimalName,Day,holdTime)
 %           Seq folder under '~/CloudStation/ByronExp/SEQ'
 % Created: 2018/03/03 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2018/03/03
+% Updated: 2018/03/22
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/SEQ');
@@ -31,14 +31,14 @@ repsPerBlock = 50;
 numElements = 2;
 % orientations = [15,30,45,60,75,105,120,135,150,165].*pi./180;
 % orientations = orientations(randperm(length(orientations),numElements));
-orientations = [60,150].*pi/180;
+orientations = [105,75].*pi/180;
 numOrient = numElements;
 stimTimes = 150/1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 179;
+degreeRadius = 50;
 radianRadius = degreeRadius*pi/180;
 stimOnTime = 150/1000;
 
@@ -98,7 +98,7 @@ spatFreq = spatFreq*180/pi;
 DistToScreenPix = DistToScreen*10/mmPerPixel;
 
 centerVals = [w_pixels/2,90/mmPerPixel];
-centerPos = [10,20].*pi/180;
+centerPos = [0,0].*pi/180;
 
 if Day<5
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
@@ -108,7 +108,7 @@ if Day<5
         stimParams{ii,1} = numElements;
         stimParams{ii,2} = orientations;
         stimParams{ii,3} = stimTimes;
-        stimParams{ii,4} = zeros(numElements,1);%2*pi*rand([numEl,1]);
+        stimParams{ii,4} = [0,pi/2];%2*pi*rand([numEl,1]);
         stimParams{ii,5} = [1,2];
     end
     
@@ -155,13 +155,14 @@ if Day<5
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
                 % Request stimulus onset
-                vbl = Screen('Flip',win,vbl+ifi/2+(currentPause-stimOnTime));
+                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime); % +ifi/2+(currentPause-stimOnTime)
                 usb.strobeEventWord(currentEvent(ww+1));
-                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+%                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 ww = ww+1;
             end
-            usb.strobeEventWord(offsetGrey);
             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+            usb.strobeEventWord(offsetGrey);
+%             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
             vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
             zz = zz+1;count = count+1;
         end
@@ -180,19 +181,22 @@ if Day<5
     Priority(0);
     
 elseif Day==5
-    conditions = 6;
+    conditions = 7;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
     stimParams = cell(conditions,blocks,5);
     
-    A = orientations(1);B = orientations(2);C = orientations(1)-35.*pi/180;
-    D = orientations(2)+50.*pi/180;
+    A = orientations(1);B = orientations(2);C = 45*pi/180;
+    D = 165*pi/180;E = 15*pi/180;F = 135*pi/180;
+    Aphase = 0;Bphase = pi/2;Cphase = 2*pi*rand;Dphase = 2*pi*rand;
+    Ephase = 2*pi*rand;Fphase = 2*pi*rand;
+    
     
     order = randperm(conditions,conditions);
     for jj=1:blocks
         stimParams{order(1),jj,1} = 2;
         stimParams{order(1),jj,2} = [A,B];
         stimParams{order(1),jj,3} = stimTimes;
-        stimParams{order(1),jj,4} = pi.*ones(numElements,1);%2*pi*rand([numEl,1]);
+        stimParams{order(1),jj,4} = [Aphase,Bphase];%2*pi*rand([numEl,1]);
         stimParams{order(1),jj,5} = [1,2];
     end
     
@@ -200,43 +204,51 @@ elseif Day==5
         stimParams{order(2),jj,1} = 2;
         stimParams{order(2),jj,2} = [B,A];
         stimParams{order(2),jj,3} = stimTimes;
-        stimParams{order(2),jj,4} = pi.*ones(numElements,1);%2*pi*rand([numEl,1]);
-        stimParams{order(2),jj,5} = [2,1];
+        stimParams{order(2),jj,4} = [Bphase,Aphase];%2*pi*rand([numEl,1]);
+        stimParams{order(2),jj,5} = [3,4];
     end
     
     for jj=1:blocks
         stimParams{order(3),jj,1} = 2;
-        stimParams{order(3),jj,2} = [C,D];
+        stimParams{order(3),jj,2} = [A,C];
         stimParams{order(3),jj,3} = stimTimes;
-        stimParams{order(3),jj,4} = pi.*ones(numElements,1);%2*pi*rand([numEl,1]);
-        stimParams{order(3),jj,5} = [3,4];
+        stimParams{order(3),jj,4} = [Aphase,Cphase];%2*pi*rand([numEl,1]);
+        stimParams{order(3),jj,5} = [5,6];
     end
     
     for jj=1:blocks
-        stimParams{order(4),jj,1} = 1;
-        stimParams{order(4),jj,2} = A;
-        stimParams{order(4),jj,3} = stimTimes;
-        stimParams{order(4),jj,4} = pi.*ones(numElements,1);%2*pi*rand([numEl,1]);
-        stimParams{order(4),jj,5} = 1;
+        stimParams{order(3),jj,1} = 2;
+        stimParams{order(3),jj,2} = [D,B];
+        stimParams{order(3),jj,3} = stimTimes;
+        stimParams{order(3),jj,4} = [Dphase,Bphase];%2*pi*rand([numEl,1]);
+        stimParams{order(3),jj,5} = [7,8];
+    end
+    
+    for jj=1:blocks
+        stimParams{order(3),jj,1} = 2;
+        stimParams{order(3),jj,2} = [E,A];
+        stimParams{order(3),jj,3} = stimTimes;
+        stimParams{order(3),jj,4} = [Ephase,Aphase];%2*pi*rand([numEl,1]);
+        stimParams{order(3),jj,5} = [9,10];
+    end
+    
+     for jj=1:blocks
+        stimParams{order(3),jj,1} = 2;
+        stimParams{order(3),jj,2} = [B,F];
+        stimParams{order(3),jj,3} = stimTimes;
+        stimParams{order(3),jj,4} = [Bphase,Fphase];%2*pi*rand([numEl,1]);
+        stimParams{order(3),jj,5} = [11,12];
     end
     
     for jj=1:blocks
         stimParams{order(5),jj,1} = 1;
-        stimParams{order(5),jj,2} = B;
+        stimParams{order(5),jj,2} = A;
         stimParams{order(5),jj,3} = stimTimes;
-        stimParams{order(5),jj,4} = pi.*ones(numElements,1);%2*pi*rand([numEl,1]);
-        stimParams{order(5),jj,5} = 2;
+        stimParams{order(5),jj,4} = Aphase;%2*pi*rand([numEl,1]);
+        stimParams{order(5),jj,5} = 13;
     end
     
-    for jj=1:blocks
-        stimParams{order(6),jj,1} = 1;
-        stimParams{order(6),jj,2} = C;
-        stimParams{order(6),jj,3} = stimTimes;
-        stimParams{order(6),jj,4} = pi.*ones(numElements,1);%2*pi*rand([numEl,1]);
-        stimParams{order(6),jj,5} = 3;
-    end
-    
-    offsetGrey = 5;
+    offsetGrey = 14;
     
     estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks*conditions+...
         conditions*blocks*holdTime+2)/60;
@@ -276,17 +288,19 @@ elseif Day==5
                 while ww<numEl
                     % ELEMENT on
                     Screen('DrawTexture', win,gratingTex, [],[],...
-                        [],[],[],[Grey Grey Grey Grey],...
-                        [], [],[White,Black,...
-                        Radius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),currentPhase(ww+1)]);
+                    [],[],[],[Grey Grey Grey Grey],...
+                    [], [],[White,Black,...
+                    radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
                     % Request stimulus onset
-                    vbl = Screen('Flip',win,vbl-ifi/2+(currentPause-stimOnTime));
-                    usb.strobeEventWord(currentEvent(ww+1));
                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                    usb.strobeEventWord(currentEvent(ww+1));
+%                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                     ww = ww+1;
                 end
-                usb.strobeEventWord(offsetGrey);
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                usb.strobeEventWord(offsetGrey);
+%                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
                 zz = zz+1;count = count+1;
             end
@@ -306,11 +320,13 @@ elseif Day==5
     
 end
 
+spatFreq = spatFreq*pi/180;
+
 cd('~/CloudStation/ByronExp/SEQ');
 fileName = sprintf('SeqStim%d-%d_%d.mat',Day,Date,AnimalName);
 save(fileName,'repsPerBlock','blocks','stimParams','stimTimes',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
-    'DistToScreen','orientations','offsetGrey','Day')
+    'DistToScreen','orientations','offsetGrey','Day','conditions')
 % Close window
 Screen('CloseAll');
 
