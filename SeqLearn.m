@@ -42,8 +42,8 @@ degreeRadius = 90;
 radianRadius = degreeRadius*pi/180;
 stimOnTime = 150/1000;
 
-% directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
-directory = '~/CloudStation/ByronExp/SEQ';
+directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
+%directory = '~/CloudStation/ByronExp/SEQ';
 
 if nargin < 3
     holdTime = 30;
@@ -83,8 +83,8 @@ Screen('ColorRange', win, 1);
 % Retrieve monitor refresh duration
 ifi = Screen('GetFlipInterval', win);
 
-dgshader = [directory '/SequenceStim2.vert.txt'];
-GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim2.frag.txt'] }, 1);
+dgshader = [directory '/SequenceStim.vert.txt'];
+GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim.frag.txt'] }, 1);
 gratingTex = Screen('SetOpenGLTexture', win, [], 0, GL.TEXTURE_3D,w_pixels,...
     h_pixels, 1, GratingShader);
 
@@ -217,35 +217,35 @@ elseif Day==5
     end
     
     for jj=1:blocks
-        stimParams{order(3),jj,1} = 2;
-        stimParams{order(3),jj,2} = [D,B];
-        stimParams{order(3),jj,3} = stimTimes;
-        stimParams{order(3),jj,4} = [Dphase,Bphase];%2*pi*rand([numEl,1]);
-        stimParams{order(3),jj,5} = [7,8];
+        stimParams{order(4),jj,1} = 2;
+        stimParams{order(4),jj,2} = [D,B];
+        stimParams{order(4),jj,3} = stimTimes;
+        stimParams{order(4),jj,4} = [Dphase,Bphase];%2*pi*rand([numEl,1]);
+        stimParams{order(4),jj,5} = [7,8];
     end
     
     for jj=1:blocks
-        stimParams{order(3),jj,1} = 2;
-        stimParams{order(3),jj,2} = [E,A];
-        stimParams{order(3),jj,3} = stimTimes;
-        stimParams{order(3),jj,4} = [Ephase,Aphase];%2*pi*rand([numEl,1]);
-        stimParams{order(3),jj,5} = [9,10];
+        stimParams{order(5),jj,1} = 2;
+        stimParams{order(5),jj,2} = [E,A];
+        stimParams{order(5),jj,3} = stimTimes;
+        stimParams{order(5),jj,4} = [Ephase,Aphase];%2*pi*rand([numEl,1]);
+        stimParams{order(5),jj,5} = [9,10];
     end
     
      for jj=1:blocks
-        stimParams{order(3),jj,1} = 2;
-        stimParams{order(3),jj,2} = [B,F];
-        stimParams{order(3),jj,3} = stimTimes;
-        stimParams{order(3),jj,4} = [Bphase,Fphase];%2*pi*rand([numEl,1]);
-        stimParams{order(3),jj,5} = [11,12];
+        stimParams{order(6),jj,1} = 2;
+        stimParams{order(6),jj,2} = [B,F];
+        stimParams{order(6),jj,3} = stimTimes;
+        stimParams{order(6),jj,4} = [Bphase,Fphase];%2*pi*rand([numEl,1]);
+        stimParams{order(6),jj,5} = [11,12];
     end
     
     for jj=1:blocks
-        stimParams{order(5),jj,1} = 1;
-        stimParams{order(5),jj,2} = A;
-        stimParams{order(5),jj,3} = stimTimes;
-        stimParams{order(5),jj,4} = Aphase;%2*pi*rand([numEl,1]);
-        stimParams{order(5),jj,5} = 13;
+        stimParams{order(7),jj,1} = 1;
+        stimParams{order(7),jj,2} = A;
+        stimParams{order(7),jj,3} = stimTimes;
+        stimParams{order(7),jj,4} = Aphase;%2*pi*rand([numEl,1]);
+        stimParams{order(7),jj,5} = 13;
     end
     
     offsetGrey = 14;

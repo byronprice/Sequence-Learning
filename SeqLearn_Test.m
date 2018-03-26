@@ -175,7 +175,7 @@ WaitSecs(1);
 usb.stopRecording;
 Priority(0);
 
-cd('~/CloudStation/ByronExp/Seq');
+cd('~/CloudStation/ByronExp/SEQ');
 fileName = sprintf('SeqTestStim%d_%d.mat',Date,AnimalName);
 save(fileName,'repsPerBlock','blocks','stimParams','stimTimes',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
