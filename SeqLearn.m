@@ -92,7 +92,6 @@ gratingTex = Screen('SetOpenGLTexture', win, [], 0, GL.TEXTURE_3D,w_pixels,...
 [w_mm,h_mm] = Screen('DisplaySize',screenid);
 conv_factor = (w_mm/w_pixels+h_mm/h_pixels)/2;
 mmPerPixel = conv_factor;
-conv_factor = 1/conv_factor;
 
 spatFreq = spatFreq*180/pi;
 DistToScreenPix = DistToScreen*10/mmPerPixel;
@@ -101,6 +100,7 @@ centerVals = [w_pixels/2,90/mmPerPixel];
 centerPos = [0,0].*pi/180;
 
 if Day<5
+    conditions = 1;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
     stimParams = cell(blocks,5);
     
