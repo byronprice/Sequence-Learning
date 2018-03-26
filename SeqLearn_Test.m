@@ -33,7 +33,8 @@ ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 200;
+degreeRadius = 179;
+radianRadius = degreeRadius*pi/180;
 stimOnTime = 50/1000;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
@@ -76,8 +77,8 @@ Screen('ColorRange', win, 1);
 % Retrieve monitor refresh duration
 ifi = Screen('GetFlipInterval', win);
 
-dgshader = [directory '/SequenceStim.vert.txt'];
-GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim.frag.txt'] }, 1);
+dgshader = [directory '/SequenceStim2.vert.txt'];
+GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim2.frag.txt'] }, 1);
 gratingTex = Screen('SetOpenGLTexture', win, [], 0, GL.TEXTURE_3D,w_pixels,...
     h_pixels, 1, GratingShader);
 
@@ -85,15 +86,12 @@ gratingTex = Screen('SetOpenGLTexture', win, [], 0, GL.TEXTURE_3D,w_pixels,...
 [w_mm,h_mm] = Screen('DisplaySize',screenid);
 conv_factor = (w_mm/w_pixels+h_mm/h_pixels)/2;
 mmPerPixel = conv_factor;
-conv_factor = 1/conv_factor;
 
-% perform unit conversions
-Radius = (tan((degreeRadius/2)*pi/180)*(DistToScreen*10*2))*conv_factor; % get number of pixels
-     % that degreeRadius degrees of visual space will occupy
-temp = (tan(((1/spatFreq)/2)*pi/180)*(DistToScreen*10*2))*conv_factor;
-spatFreq = 1/temp;clear temp;
+spatFreq = spatFreq*180/pi;
+DistToScreenPix = DistToScreen*10/mmPerPixel;
 
-centerVals = [w_pixels/2,h_pixels/2];
+centerVals = [w_pixels/2,90/mmPerPixel];
+centerPos = [0,0].*pi/180;
 
 waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
 stimParams = cell(repsPerBlock*blocks,5);
@@ -106,7 +104,7 @@ for ii=1:blocks
    stimParams{ii,2} = orientations(ind2);
    ind3 = randperm(length(stimTimes),1);
    stimParams{ii,3} = stimTimes(ind3);
-   stimParams{ii,4} = pi.*ones(numEl,1);%2*pi*rand([numEl,1]);
+   stimParams{ii,4} = pi/3.*ones(numEl,1);%2*pi*rand([numEl,1]);
    stimParams{ii,5} = ind2;
 end
 
@@ -148,9 +146,10 @@ for yy=1:blocks
         while ww<numEl
             % ELEMENT on
             Screen('DrawTexture', win,gratingTex, [],[],...
-                [],[],[],[Grey Grey Grey Grey],...
-                [], [],[White,Black,...
-                Radius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),currentPhase(ww+1)]);
+                    [],[],[],[Grey Grey Grey Grey],...
+                    [], [],[White,Black,...
+                    radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
             % Request stimulus onset
             vbl = Screen('Flip',win,vbl-ifi/2+(currentPause-stimOnTime));
             usb.strobeEventWord(currentEvent(ww+1));
