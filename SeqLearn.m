@@ -250,8 +250,8 @@ elseif Day==5
     
     offsetGrey = 14;
     
-    estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks*conditions+...
-        conditions*blocks*holdTime+2)/60;
+    estimatedTime = ((mean(ISI)+stimTimes*2)*repsPerBlock*blocks*6+...
+        (mean(ISI)+stimTimes)*repsPerBlock*blocks+conditions*blocks*holdTime+2)/60;
     fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
     
     % Define first and second ring color as RGBA vector with normalized color
