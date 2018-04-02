@@ -24,18 +24,18 @@ function [] = SeqLearn_Test(AnimalName,holdTime)
 % Updated: 2018/04/02
 %  By: Byron Price
 
-blocks = 100;
+blocks = 125;
 repsPerBlock = 10;
 numElements = [1,2];
 orientations = (0:15:165).*pi./180;numOrient = length(orientations);
-stimTimes = (100:16.66666667:300)./1000;
+stimTimes = (116.6667:16.66666667:400)./1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
 degreeRadius = 179;
 radianRadius = degreeRadius*pi/180;
-stimOnTime = 50/1000;
+stimOnTime = 100/1000;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 
@@ -77,8 +77,8 @@ Screen('ColorRange', win, 1);
 % Retrieve monitor refresh duration
 ifi = Screen('GetFlipInterval', win);
 
-dgshader = [directory '/SequenceStim2.vert.txt'];
-GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim2.frag.txt'] }, 1);
+dgshader = [directory '/SequenceStim.vert.txt'];
+GratingShader = LoadGLSLProgramFromFiles({ dgshader, [directory '/SequenceStim.frag.txt'] }, 1);
 gratingTex = Screen('SetOpenGLTexture', win, [], 0, GL.TEXTURE_3D,w_pixels,...
     h_pixels, 1, GratingShader);
 
@@ -94,23 +94,39 @@ centerVals = [w_pixels/2,90/mmPerPixel];
 centerPos = [0,0].*pi/180;
 
 waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
-stimParams = cell(repsPerBlock*blocks,5);
+stimParams = cell(blocks,5);
 
 for ii=1:blocks
-   ind1 = binornd(1,0.9)+1;
+   ind1 = binornd(1,0.8)+1;
    numEl = numElements(ind1);
    stimParams{ii,1} = numEl; % 1 or 2 element sequence
    ind2 = random('Discrete Uniform',numOrient,[numEl,1]);
+   
+   if numEl == 2
+       while ind2(1)==ind2(2)
+           ind2 = random('Discrete Uniform',numOrient,[numEl,1]);
+       end
+   end
+   
    stimParams{ii,2} = orientations(ind2); % stim orientation
    ind3 = randperm(length(stimTimes),1);
    stimParams{ii,3} = stimTimes(ind3); % stimulus timing
    stimParams{ii,4} = pi/3.*ones(numEl,1);%2*pi*rand([numEl,1]); % phase
-   stimParams{ii,5} = ind2;
+   
+   if numEl == 1
+     stimParams{ii,5} = {str2double(sprintf('%d%d',numEl,ind2))};
+   else
+      temp = cell(numEl,1);
+      for jj=1:numEl
+          temp{jj} = str2double(sprintf('%d%d',numEl,ind2(jj)));
+      end
+      stimParams{ii,5} = temp;
+   end
 end
 
-offsetGrey = numOrient+1;
+offsetGrey = 1;
 
-estimatedTime = ((mean(ISI)+mean(stimTimes)+2*stimOnTime)*repsPerBlock*blocks+5*holdTime+5)/60;
+estimatedTime = ((mean(ISI)+mean(stimTimes-stimOnTime)+2*stimOnTime)*repsPerBlock*blocks+6*holdTime+6)/60;
 fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
 
 % Define first and second ring color as RGBA vector with normalized color
@@ -131,7 +147,6 @@ WaitSecs(holdTime);
 
 % Animation loop
 count = 1;
-vbl = Screen('Flip',win);
 for yy=1:blocks  
     numEl = stimParams{yy,1};
     currentOrient = stimParams{yy,2};
@@ -152,7 +167,7 @@ for yy=1:blocks
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
             % Request stimulus onset
             vbl = Screen('Flip',win,vbl-ifi/2+(currentPause-stimOnTime));
-            usb.strobeEventWord(currentEvent(ww+1));
+            usb.strobeEventWord(currentEvent{ww+1});
             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
             ww = ww+1;
         end
@@ -160,7 +175,7 @@ for yy=1:blocks
         vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
         zz = zz+1;count = count+1;
     end
-    if mod(yy,blocks/4)==0
+    if mod(yy,blocks/5)==0
         timeIncrement = 1;
         totalTime = timeIncrement;
         while totalTime<holdTime
