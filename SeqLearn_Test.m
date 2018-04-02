@@ -21,11 +21,11 @@ function [] = SeqLearn_Test(AnimalName,holdTime)
 %           Seq folder under '~/CloudStation/ByronExp/Seq'
 % Created: 2018/02/20 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2018/03/03
+% Updated: 2018/04/02
 %  By: Byron Price
 
-blocks = 60;
-repsPerBlock = 25;
+blocks = 100;
+repsPerBlock = 10;
 numElements = [1,2];
 orientations = (0:15:165).*pi./180;numOrient = length(orientations);
 stimTimes = (100:16.66666667:300)./1000;
@@ -97,20 +97,20 @@ waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
 stimParams = cell(repsPerBlock*blocks,5);
 
 for ii=1:blocks
-   ind1 = randperm(length(numElements),1);
+   ind1 = binornd(1,0.9)+1;
    numEl = numElements(ind1);
-   stimParams{ii,1} = numEl;
+   stimParams{ii,1} = numEl; % 1 or 2 element sequence
    ind2 = random('Discrete Uniform',numOrient,[numEl,1]);
-   stimParams{ii,2} = orientations(ind2);
+   stimParams{ii,2} = orientations(ind2); % stim orientation
    ind3 = randperm(length(stimTimes),1);
-   stimParams{ii,3} = stimTimes(ind3);
-   stimParams{ii,4} = pi/3.*ones(numEl,1);%2*pi*rand([numEl,1]);
+   stimParams{ii,3} = stimTimes(ind3); % stimulus timing
+   stimParams{ii,4} = pi/3.*ones(numEl,1);%2*pi*rand([numEl,1]); % phase
    stimParams{ii,5} = ind2;
 end
 
 offsetGrey = numOrient+1;
 
-estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks+5*holdTime+5)/60;
+estimatedTime = ((mean(ISI)+mean(stimTimes)+2*stimOnTime)*repsPerBlock*blocks+5*holdTime+5)/60;
 fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
 
 % Define first and second ring color as RGBA vector with normalized color
@@ -157,7 +157,6 @@ for yy=1:blocks
             ww = ww+1;
         end
         usb.strobeEventWord(offsetGrey);
-        vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
         vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
         zz = zz+1;count = count+1;
     end
