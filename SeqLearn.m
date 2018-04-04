@@ -318,6 +318,105 @@ elseif Day==5
     usb.stopRecording;
     Priority(0);
     
+elseif Day==6
+    holdTime = 20;
+    conditions = 3;
+    waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
+    stimParams = cell(conditions,blocks,5);
+    
+    A = orientations(1);B = orientations(2);C = 150*pi/180;
+    Aphase = 0;Bphase = pi/2;Cphase = 2*pi*rand;
+    
+    posTimes = linspace(100,200,7)./1000;
+    
+    order = randperm(conditions,conditions);
+    for jj=1:blocks
+        ind = randperm(length(posTimes),1);
+        stimParams{order(1),jj,1} = 1;
+        stimParams{order(1),jj,2} = A;
+        stimParams{order(1),jj,3} = posTimes(ind);
+        stimParams{order(1),jj,4} = Aphase;%2*pi*rand([numEl,1]);
+        stimParams{order(1),jj,5} = str2double(sprintf('%d%d',1,ind));
+    end
+    
+    for jj=1:blocks
+        ind = randperm(length(posTimes),1);
+        stimParams{order(2),jj,1} = 1;
+        stimParams{order(2),jj,2} = B;
+        stimParams{order(2),jj,3} = posTimes(ind);
+        stimParams{order(2),jj,4} = Bphase;%2*pi*rand([numEl,1]);
+        stimParams{order(2),jj,5} = str2double(sprintf('%d%d',2,ind));
+    end
+    
+    for jj=1:blocks
+        ind = randperm(length(posTimes),1);
+        stimParams{order(3),jj,1} = 1;
+        stimParams{order(3),jj,2} = C;
+        stimParams{order(3),jj,3} = posTimes(ind);
+        stimParams{order(3),jj,4} = Cphase;%2*pi*rand([numEl,1]);
+        stimParams{order(3),jj,5} = str2double(sprintf('%d%d',3,ind));
+    end
+    
+    offsetGrey = 1;
+    
+    % Define first and second ring color as RGBA vector with normalized color
+    % component range between 0.0 and 1.0, based on Contrast between 0 and 1
+    % create all textures in the same window (win), each of the appropriate
+    % size
+    Grey = 0.5;
+    Black = 0;
+    White = 1;
+    
+    Screen('BlendFunction',win,GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    
+    % Perform initial flip to gray background and sync us to the retrace:
+    Priority(9);
+    
+    usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
+    WaitSecs(holdTime);
+    
+    % Animation loop
+    count = 1;
+    for xx=1:conditions
+        vbl = Screen('Flip',win);
+        for yy=1:blocks
+            numEl = stimParams{xx,yy,1};
+            currentOrient = stimParams{xx,yy,2};
+            currentPause = stimParams{xx,yy,3};
+            currentPhase = stimParams{xx,yy,4};
+            currentEvent = stimParams{xx,yy,5};
+            
+            vbl = Screen('Flip',win);
+            zz = 0;ww = 0;
+            while zz < repsPerBlock
+                Screen('DrawTexture', win,gratingTex, [],[],...
+                    [],[],[],[Grey Grey Grey Grey],...
+                    [], [],[White,Black,...
+                    radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
+                % Request stimulus onset
+                vbl = Screen('Flip',win,vbl+ifi/2);
+                usb.strobeEventWord(currentEvent(ww+1));
+                
+                vbl = Screen('Flip',win,vbl-ifi/2+currentPause);
+                usb.strobeEventWord(offsetGrey);
+                %                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
+                zz = zz+1;count = count+1;
+            end
+
+            timeIncrement = 1;
+            totalTime = timeIncrement;
+            while totalTime<holdTime
+                usb.strobeEventWord(0);
+                vbl = Screen('Flip',win,vbl-ifi/2+timeIncrement);
+                totalTime = totalTime+timeIncrement;
+            end
+        end
+    end
+    WaitSecs(1);
+    usb.stopRecording;
+    Priority(0);
 end
 
 spatFreq = spatFreq*pi/180;
