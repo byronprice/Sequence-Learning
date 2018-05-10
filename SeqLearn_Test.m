@@ -90,7 +90,7 @@ mmPerPixel = conv_factor;
 spatFreq = spatFreq*180/pi;
 DistToScreenPix = DistToScreen*10/mmPerPixel;
 
-centerVals = [w_pixels/2,90/mmPerPixel];
+centerVals = [w_pixels/2,85/mmPerPixel];
 centerPos = [0,0].*pi/180;
 
 waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
