@@ -33,14 +33,14 @@ numElements = 2;
 % orientations = orientations(randperm(length(orientations),numElements));
 orientations = [105,45].*pi/180;
 numOrient = numElements;
-stimTimes = 150/1000;
+stimTimes = 100/1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
 degreeRadius = 179;
 radianRadius = degreeRadius*pi/180;
-stimOnTime = 150/1000;
+stimOnTime = 100/1000;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 %directory = '~/CloudStation/ByronExp/SEQ';
@@ -155,12 +155,12 @@ if Day<5
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
                 % Request stimulus onset
-                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime); % +ifi/2+(currentPause-stimOnTime)
+                vbl = Screen('Flip',win,vbl-ifi/2); % +ifi/2+(currentPause-stimOnTime)
                 usb.strobeEventWord(currentEvent(ww+1));
-%                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 ww = ww+1;
             end
-            vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
             usb.strobeEventWord(offsetGrey);
 %             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
             vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
@@ -181,7 +181,7 @@ if Day<5
     Priority(0);
     
 elseif Day==5
-    conditions = 7;
+    conditions = 8;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
     stimParams = cell(conditions,blocks,5);
     
@@ -248,7 +248,15 @@ elseif Day==5
         stimParams{order(7),jj,5} = 13;
     end
     
-    offsetGrey = 14;
+    for jj=1:blocks
+        stimParams{order(8),jj,1} = 1;
+        stimParams{order(8),jj,2} = B;
+        stimParams{order(8),jj,3} = stimTimes;
+        stimParams{order(8),jj,4} = Bphase;%2*pi*rand([numEl,1]);
+        stimParams{order(8),jj,5} = 14;
+    end
+    
+    offsetGrey = 15;
     
     estimatedTime = ((mean(ISI)+stimTimes*2)*repsPerBlock*blocks*6+...
         (mean(ISI)+stimTimes)*repsPerBlock*blocks+conditions*blocks*holdTime+2)/60;
@@ -295,10 +303,11 @@ elseif Day==5
                     % Request stimulus onset
                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                     usb.strobeEventWord(currentEvent(ww+1));
-%                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                    vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                    vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                     ww = ww+1;
                 end
-                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+%                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 usb.strobeEventWord(offsetGrey);
 %                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
