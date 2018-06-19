@@ -155,7 +155,7 @@ if Day<5
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
                 % Request stimulus onset
-                vbl = Screen('Flip',win,vbl-ifi/2); % +ifi/2+(currentPause-stimOnTime)
+                vbl = Screen('Flip',win); % +ifi/2+(currentPause-stimOnTime)
                 usb.strobeEventWord(currentEvent(ww+1));
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
@@ -301,7 +301,7 @@ elseif Day==5
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
                     % Request stimulus onset
-                    vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                    vbl = Screen('Flip',win);
                     usb.strobeEventWord(currentEvent(ww+1));
                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
@@ -431,10 +431,10 @@ end
 spatFreq = spatFreq*pi/180;
 
 cd('~/CloudStation/ByronExp/SEQ');
-fileName = sprintf('SeqStim%d-%d_%d.mat',Day,Date,AnimalName);
+fileName = sprintf('SeqLearnStim%d-%d_%d.mat',Day,Date,AnimalName);
 save(fileName,'repsPerBlock','blocks','stimParams','stimTimes',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
-    'DistToScreen','orientations','offsetGrey','Day','conditions')
+    'DistToScreen','orientations','offsetGrey','Day','conditions','stimOnTime')
 % Close window
 Screen('CloseAll');
 
