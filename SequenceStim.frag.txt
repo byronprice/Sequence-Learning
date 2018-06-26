@@ -15,6 +15,7 @@ varying float phase;
 varying float screenDist;
 varying float CenterX2;
 varying float CenterY2;
+varying float Contrast;
 
 void main()
 {
@@ -34,8 +35,6 @@ void main()
     
     float kernel = exp(-((theta-CenterX2)*(theta-CenterX2)+(phi-CenterY2)*(phi-CenterY2))/(Radius*Radius/2.0)); 
     /* float kernel = exp(-acos(sin(CenterX2)*sin(theta)+cos(CenterX2)*cos(theta)*cos(CenterY2-phi))/(Radius/2)); */
-    mix_coeff = 0.5*mix_coeff*kernel+0.5;
+    mix_coeff = Contrast*0.5*mix_coeff*kernel+0.5;
     gl_FragColor = vec4(mix_coeff,mix_coeff,mix_coeff,1);
-
-
 }

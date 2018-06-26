@@ -41,6 +41,7 @@ gama = 2.1806;
 degreeRadius = 179;
 radianRadius = degreeRadius*pi/180;
 stimOnTime = 100/1000;
+Contrast = 0.2;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 %directory = '~/CloudStation/ByronExp/SEQ';
@@ -135,7 +136,6 @@ if Day<5
     
     % Animation loop
     count = 1;
-    vbl = Screen('Flip',win);
     for yy=1:blocks
         numEl = stimParams{yy,1};
         currentOrient = stimParams{yy,2};
@@ -143,9 +143,10 @@ if Day<5
         currentPhase = stimParams{yy,4};
         currentEvent = stimParams{yy,5};
         
-        vbl = Screen('Flip',win);
+        
         zz = 0;
         while zz < repsPerBlock
+            vbl = Screen('Flip',win);
             ww = 0;
             while ww<numEl
                 % ELEMENT on
@@ -153,12 +154,12 @@ if Day<5
                     [],[],[],[Grey Grey Grey Grey],...
                     [], [],[White,Black,...
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
-                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast]);
                 % Request stimulus onset
-                vbl = Screen('Flip',win); % +ifi/2+(currentPause-stimOnTime)
+                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime); % +ifi/2+(currentPause-stimOnTime)
                 usb.strobeEventWord(currentEvent(ww+1));
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
-                vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+%                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 ww = ww+1;
             end
             usb.strobeEventWord(offsetGrey);
@@ -281,7 +282,6 @@ elseif Day==5
     % Animation loop
     count = 1;
     for xx=1:conditions
-        vbl = Screen('Flip',win);
         for yy=1:blocks
             numEl = stimParams{xx,yy,1};
             currentOrient = stimParams{xx,yy,2};
@@ -289,21 +289,20 @@ elseif Day==5
             currentPhase = stimParams{xx,yy,4};
             currentEvent = stimParams{xx,yy,5};
             
-            vbl = Screen('Flip',win);
             zz = 0;
             while zz < repsPerBlock
                 ww = 0;
+                vbl = Screen('Flip',win);
                 while ww<numEl
                     % ELEMENT on
                     Screen('DrawTexture', win,gratingTex, [],[],...
                     [],[],[],[Grey Grey Grey Grey],...
                     [], [],[White,Black,...
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
-                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast]);
                     % Request stimulus onset
-                    vbl = Screen('Flip',win);
-                    usb.strobeEventWord(currentEvent(ww+1));
                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+                    usb.strobeEventWord(currentEvent(ww+1));
                     vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                     ww = ww+1;
                 end
@@ -387,7 +386,6 @@ elseif Day==6
     % Animation loop
     count = 1;
     for xx=1:conditions
-        vbl = Screen('Flip',win);
         for yy=1:blocks
             numEl = stimParams{xx,yy,1};
             currentOrient = stimParams{xx,yy,2};
@@ -402,7 +400,7 @@ elseif Day==6
                     [],[],[],[Grey Grey Grey Grey],...
                     [], [],[White,Black,...
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
-                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),0]);
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast]);
                 % Request stimulus onset
                 vbl = Screen('Flip',win,vbl+ifi/2);
                 usb.strobeEventWord(currentEvent(ww+1));
@@ -434,7 +432,7 @@ cd('~/CloudStation/ByronExp/SEQ');
 fileName = sprintf('SeqLearnStim%d-%d_%d.mat',Day,Date,AnimalName);
 save(fileName,'repsPerBlock','blocks','stimParams','stimTimes',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
-    'DistToScreen','orientations','offsetGrey','Day','conditions','stimOnTime')
+    'DistToScreen','orientations','offsetGrey','Day','conditions','stimOnTime','Contrast')
 % Close window
 Screen('CloseAll');
 

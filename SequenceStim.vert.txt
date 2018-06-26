@@ -18,6 +18,7 @@ varying float phase;
 varying float screenDist;
 varying float CenterX2;
 varying float CenterY2;
+varying float Contrast;
 
 void main()
 {
@@ -41,4 +42,5 @@ void main()
     screenDist = auxParameters2[0];
     CenterX2 = auxParameters2[1];
     CenterY2 = auxParameters2[2];
+    Contrast = auxParameters2[3];
 }
