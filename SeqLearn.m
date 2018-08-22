@@ -21,7 +21,7 @@ function [] = SeqLearn(AnimalName,Day,holdTime)
 %           Seq folder under '~/CloudStation/ByronExp/SEQ'
 % Created: 2018/03/03 at 24 Cummington, Boston
 %  Byron Price
-% Updated: 2018/03/22
+% Updated: 2018/08/22
 %  By: Byron Price
 
 cd('~/CloudStation/ByronExp/SEQ');
@@ -38,16 +38,16 @@ ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 100;
+degreeRadius = 60;
 radianRadius = degreeRadius*pi/180;
 stimOnTime = 100/1000;
-Contrast = 0.25;
+Contrast = 0.5;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 %directory = '~/CloudStation/ByronExp/SEQ';
 
 if nargin < 3
-    holdTime = 30;
+    holdTime = 120;
 end
 
 Date = datetime('today','Format','yyyy-MM-dd');
@@ -103,6 +103,9 @@ centerPos = [0,0].*pi/180;
 if Day<=5
     conditions = 1;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
+    Contrast = Contrast.*ones(repsPerBlock*blocks,2);
+    inds = randperm(repsPerBlock*blocks,round(repsPerBlock*blocks*0.1));
+    Contrast(inds,2) = 0;
     stimParams = cell(blocks,5);
     
     for ii=1:blocks
@@ -139,7 +142,7 @@ if Day<=5
     for yy=1:blocks
         numEl = stimParams{yy,1};
         currentOrient = stimParams{yy,2};
-        currentPause = stimParams{yy,3};
+%         currentPause = stimParams{yy,3};
         currentPhase = stimParams{yy,4};
         currentEvent = stimParams{yy,5};
         
@@ -154,7 +157,7 @@ if Day<=5
                     [],[],[],[Grey Grey Grey Grey],...
                     [], [],[White,Black,...
                     radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
-                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast]);
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast(count,ww+1)]);
                 % Request stimulus onset
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime); % +ifi/2+(currentPause-stimOnTime)
                 usb.strobeEventWord(currentEvent(ww+1));
@@ -177,7 +180,7 @@ if Day<=5
             end
         end
     end
-    WaitSecs(1);
+    WaitSecs(holdTime);
     usb.stopRecording;
     Priority(0);
     
@@ -322,7 +325,7 @@ elseif Day==6
             end
         end
     end
-    WaitSecs(1);
+    WaitSecs(holdTime);
     usb.stopRecording;
     Priority(0);
     
@@ -421,7 +424,7 @@ elseif Day==7
             end
         end
     end
-    WaitSecs(1);
+    WaitSecs(holdTime);
     usb.stopRecording;
     Priority(0);
 end
