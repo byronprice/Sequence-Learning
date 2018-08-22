@@ -38,10 +38,10 @@ ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 179;
+degreeRadius = 100;
 radianRadius = degreeRadius*pi/180;
 stimOnTime = 100/1000;
-Contrast = 0.2;
+Contrast = 0.25;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 %directory = '~/CloudStation/ByronExp/SEQ';
@@ -100,7 +100,7 @@ DistToScreenPix = DistToScreen*10/mmPerPixel;
 centerVals = [w_pixels/2,85/mmPerPixel];
 centerPos = [0,0].*pi/180;
 
-if Day<5
+if Day<=5
     conditions = 1;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
     stimParams = cell(blocks,5);
@@ -181,7 +181,7 @@ if Day<5
     usb.stopRecording;
     Priority(0);
     
-elseif Day==5
+elseif Day==6
     conditions = 8;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
     stimParams = cell(conditions,blocks,5);
@@ -326,7 +326,7 @@ elseif Day==5
     usb.stopRecording;
     Priority(0);
     
-elseif Day==6
+elseif Day==7
     holdTime = 20;
     conditions = 3;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
