@@ -26,22 +26,23 @@ function [] = SeqLearn(AnimalName,Day,holdTime)
 
 cd('~/CloudStation/ByronExp/SEQ');
 
-blocks = 4;
-repsPerBlock = 50;
+blocks = 5;
+repsPerBlock = 40;
 numElements = 2;
 % orientations = [15,30,45,60,75,105,120,135,150,165].*pi./180;
 % orientations = orientations(randperm(length(orientations),numElements));
-orientations = [105,45].*pi/180;
+orientations = [115,60].*pi/180;
 numOrient = numElements;
-stimTimes = 100/1000;
+stimTimes = 150/1000;
 ISI = [0.5,1.5];
 spatFreq = 0.05;
 DistToScreen = 25;
 gama = 2.1806;
-degreeRadius = 60;
+degreeRadius = 179;
 radianRadius = degreeRadius*pi/180;
-stimOnTime = 100/1000;
-Contrast = 0.5;
+stimOnTime = stimTimes;
+Contrast = 0.25;
+proportionSingleElement = 0.1;
 
 directory = '~/Documents/MATLAB/Byron/Sequence-Learning';
 %directory = '~/CloudStation/ByronExp/SEQ';
@@ -104,8 +105,12 @@ if Day<=5
     conditions = 1;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
     Contrast = Contrast.*ones(repsPerBlock*blocks,2);
-    inds = randperm(repsPerBlock*blocks,round(repsPerBlock*blocks*0.1));
+    inds = randperm(repsPerBlock*blocks,round(repsPerBlock*blocks*proportionSingleElement));
     Contrast(inds,2) = 0;
+    EventCodes = ones(repsPerBlock*blocks,2).*2;
+    EventCodes(:,2) = 3;
+    EventCodes(inds,1) = 4;
+    EventCodes(inds,2) = 5;
     stimParams = cell(blocks,5);
     
     for ii=1:blocks
@@ -113,12 +118,12 @@ if Day<=5
         stimParams{ii,2} = orientations;
         stimParams{ii,3} = stimTimes;
         stimParams{ii,4} = [0,pi/2];%2*pi*rand([numEl,1]);
-        stimParams{ii,5} = [1,2];
+        stimParams{ii,5} = [2,3,4,5];
     end
     
-    offsetGrey = numOrient+1;
+    offsetGrey = 6;
     
-    estimatedTime = ((mean(ISI)+mean(stimTimes))*repsPerBlock*blocks+blocks*holdTime+2)/60;
+    estimatedTime = ((mean(ISI)+mean(stimTimes)*4)*repsPerBlock*blocks+blocks*holdTime/4+2*holdTime+2)/60;
     fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
     
     % Define first and second ring color as RGBA vector with normalized color
@@ -134,7 +139,7 @@ if Day<=5
     % Perform initial flip to gray background and sync us to the retrace:
     Priority(9);
     
-    usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
+    usb.startRecording;WaitSecs(1);usb.strobeEventWord(1);
     WaitSecs(holdTime);
     
     % Animation loop
@@ -144,7 +149,7 @@ if Day<=5
         currentOrient = stimParams{yy,2};
 %         currentPause = stimParams{yy,3};
         currentPhase = stimParams{yy,4};
-        currentEvent = stimParams{yy,5};
+%         currentEvent = stimParams{yy,5};
         
         
         zz = 0;
@@ -160,7 +165,7 @@ if Day<=5
                     currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast(count,ww+1)]);
                 % Request stimulus onset
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime); % +ifi/2+(currentPause-stimOnTime)
-                usb.strobeEventWord(currentEvent(ww+1));
+                usb.strobeEventWord(EventCodes(count,ww+1));
                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
 %                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
                 ww = ww+1;
@@ -173,13 +178,14 @@ if Day<=5
         if yy~=blocks
             timeIncrement = 1;
             totalTime = timeIncrement;
-            while totalTime<holdTime
-                usb.strobeEventWord(0);
+            while totalTime<=holdTime/4
+                usb.strobeEventWord(1);
                 vbl = Screen('Flip',win,vbl-ifi/2+timeIncrement);
                 totalTime = totalTime+timeIncrement;
             end
         end
     end
+    usb.strobeEventWord(1);
     WaitSecs(holdTime);
     usb.stopRecording;
     Priority(0);
@@ -435,7 +441,8 @@ cd('~/CloudStation/ByronExp/SEQ');
 fileName = sprintf('SeqLearnStim%d-%d_%d.mat',Day,Date,AnimalName);
 save(fileName,'repsPerBlock','blocks','stimParams','stimTimes',...
     'w_pixels','h_pixels','spatFreq','mmPerPixel','waitTimes','holdTime',...
-    'DistToScreen','orientations','offsetGrey','Day','conditions','stimOnTime','Contrast')
+    'DistToScreen','orientations','offsetGrey','Day','conditions',...
+    'stimOnTime','Contrast','proportionSingleElement')
 % Close window
 Screen('CloseAll');
 
