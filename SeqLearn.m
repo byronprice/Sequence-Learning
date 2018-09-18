@@ -191,85 +191,29 @@ if Day<=5
     Priority(0);
     
 elseif Day==6
-    conditions = 8;
-    waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
-    stimParams = cell(conditions,blocks,5);
+    blocks = 10;proportionSingleElement = 0;
+    conditions = 1;
+    stimTimes = 0.1:1/60:0.4;
+    orientations = (1:180).*pi/180;
+    waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([repsPerBlock*blocks,1]);
+    Contrast = Contrast.*ones(repsPerBlock*blocks,2);
+    EventCodes = ones(repsPerBlock*blocks,2).*2;
+    EventCodes(:,2) = 3;
+    stimParams = cell(blocks,5);
     
-    A = orientations(1);B = orientations(2);C = 75*pi/180;
-    D = 165*pi/180;E = 15*pi/180;F = 135*pi/180;
-    Aphase = 0;Bphase = pi/2;Cphase = 2*pi*rand;Dphase = 2*pi*rand;
-    Ephase = 2*pi*rand;Fphase = 2*pi*rand;
-    
-    
-    order = randperm(conditions,conditions);
-    for jj=1:blocks
-        stimParams{order(1),jj,1} = 2;
-        stimParams{order(1),jj,2} = [A,B];
-        stimParams{order(1),jj,3} = stimTimes;
-        stimParams{order(1),jj,4} = [Aphase,Bphase];%2*pi*rand([numEl,1]);
-        stimParams{order(1),jj,5} = [1,2];
+    for ii=1:blocks
+        stimParams{ii,1} = numElements;
+        inds = random('Discrete Uniform',length(orientations),[repsPerBlock,2]);
+        stimParams{ii,2} = orientations(inds);
+        inds = random('Discrete Uniform',length(stimTimes),[repsPerBlock,1]);
+        stimParams{ii,3} = stimTimes(inds);
+        stimParams{ii,4} = [0,pi/2];%2*pi*rand([numEl,1]);
+        stimParams{ii,5} = [2,3];
     end
     
-    for jj=1:blocks
-        stimParams{order(2),jj,1} = 2;
-        stimParams{order(2),jj,2} = [B,A];
-        stimParams{order(2),jj,3} = stimTimes;
-        stimParams{order(2),jj,4} = [Bphase,Aphase];%2*pi*rand([numEl,1]);
-        stimParams{order(2),jj,5} = [3,4];
-    end
+    offsetGrey = 4;
     
-    for jj=1:blocks
-        stimParams{order(3),jj,1} = 2;
-        stimParams{order(3),jj,2} = [A,C];
-        stimParams{order(3),jj,3} = stimTimes;
-        stimParams{order(3),jj,4} = [Aphase,Cphase];%2*pi*rand([numEl,1]);
-        stimParams{order(3),jj,5} = [5,6];
-    end
-    
-    for jj=1:blocks
-        stimParams{order(4),jj,1} = 2;
-        stimParams{order(4),jj,2} = [D,B];
-        stimParams{order(4),jj,3} = stimTimes;
-        stimParams{order(4),jj,4} = [Dphase,Bphase];%2*pi*rand([numEl,1]);
-        stimParams{order(4),jj,5} = [7,8];
-    end
-    
-    for jj=1:blocks
-        stimParams{order(5),jj,1} = 2;
-        stimParams{order(5),jj,2} = [E,A];
-        stimParams{order(5),jj,3} = stimTimes;
-        stimParams{order(5),jj,4} = [Ephase,Aphase];%2*pi*rand([numEl,1]);
-        stimParams{order(5),jj,5} = [9,10];
-    end
-    
-     for jj=1:blocks
-        stimParams{order(6),jj,1} = 2;
-        stimParams{order(6),jj,2} = [B,F];
-        stimParams{order(6),jj,3} = stimTimes;
-        stimParams{order(6),jj,4} = [Bphase,Fphase];%2*pi*rand([numEl,1]);
-        stimParams{order(6),jj,5} = [11,12];
-    end
-    
-    for jj=1:blocks
-        stimParams{order(7),jj,1} = 1;
-        stimParams{order(7),jj,2} = A;
-        stimParams{order(7),jj,3} = stimTimes;
-        stimParams{order(7),jj,4} = Aphase;%2*pi*rand([numEl,1]);
-        stimParams{order(7),jj,5} = 13;
-    end
-    
-    for jj=1:blocks
-        stimParams{order(8),jj,1} = 1;
-        stimParams{order(8),jj,2} = B;
-        stimParams{order(8),jj,3} = stimTimes;
-        stimParams{order(8),jj,4} = Bphase;%2*pi*rand([numEl,1]);
-        stimParams{order(8),jj,5} = 14;
-    end
-    
-    offsetGrey = 15;
-    
-    estimatedTime = ((mean(ISI)+stimTimes*2)*repsPerBlock*blocks*6+...
-        (mean(ISI)+stimTimes)*repsPerBlock*blocks+conditions*blocks*holdTime+2)/60;
+    estimatedTime = ((mean(ISI)+mean(stimTimes)*4)*repsPerBlock*blocks+blocks*holdTime/4+2*holdTime+2)/60;
     fprintf('\nEstimated time: %3.2f minutes\n',estimatedTime);
     
     % Define first and second ring color as RGBA vector with normalized color
@@ -285,57 +229,57 @@ elseif Day==6
     % Perform initial flip to gray background and sync us to the retrace:
     Priority(9);
     
-    usb.startRecording;WaitSecs(1);usb.strobeEventWord(0);
+    usb.startRecording;WaitSecs(1);usb.strobeEventWord(1);
     WaitSecs(holdTime);
     
     % Animation loop
     count = 1;
-    for xx=1:conditions
-        for yy=1:blocks
-            numEl = stimParams{xx,yy,1};
-            currentOrient = stimParams{xx,yy,2};
-            currentPause = stimParams{xx,yy,3};
-            currentPhase = stimParams{xx,yy,4};
-            currentEvent = stimParams{xx,yy,5};
-            
-            zz = 0;
-            while zz < repsPerBlock
-                ww = 0;
-                vbl = Screen('Flip',win);
-                while ww<numEl
-                    % ELEMENT on
-                    Screen('DrawTexture', win,gratingTex, [],[],...
+    for yy=1:blocks
+        numEl = stimParams{yy,1};
+        currentOrient = stimParams{yy,2};
+        currentPause = stimParams{yy,3};
+        currentPhase = stimParams{yy,4};
+%         currentEvent = stimParams{yy,5};
+        
+        
+        zz = 0;
+        while zz < repsPerBlock
+            vbl = Screen('Flip',win);
+            ww = 0;
+            while ww<numEl
+                % ELEMENT on
+                Screen('DrawTexture', win,gratingTex, [],[],...
                     [],[],[],[Grey Grey Grey Grey],...
                     [], [],[White,Black,...
-                    radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(ww+1),...
-                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast]);
-                    % Request stimulus onset
-                    vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
-                    usb.strobeEventWord(currentEvent(ww+1));
-                    vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
-                    ww = ww+1;
-                end
+                    radianRadius,centerVals(1),centerVals(2),spatFreq,currentOrient(zz+1,ww+1),...
+                    currentPhase(ww+1),DistToScreenPix,centerPos(1),centerPos(2),Contrast(count,ww+1)]);
+                % Request stimulus onset
+                vbl = Screen('Flip',win,vbl-ifi/2+currentPause(zz+1)); % 
+                usb.strobeEventWord(EventCodes(count,ww+1));
+                vbl = Screen('Flip',win,vbl-ifi/2+currentPause(zz+1));
 %                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
-                usb.strobeEventWord(offsetGrey);
-%                 vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
-                vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
-                zz = zz+1;count = count+1;
+                ww = ww+1;
             end
-
+            usb.strobeEventWord(offsetGrey);
+%             vbl = Screen('Flip',win,vbl-ifi/2+stimOnTime);
+            vbl = Screen('Flip',win,vbl-ifi/2+waitTimes(count));
+            zz = zz+1;count = count+1;
+        end
+        if yy~=blocks
             timeIncrement = 1;
             totalTime = timeIncrement;
-            while totalTime<holdTime
-                usb.strobeEventWord(0);
+            while totalTime<=holdTime/4
+                usb.strobeEventWord(1);
                 vbl = Screen('Flip',win,vbl-ifi/2+timeIncrement);
                 totalTime = totalTime+timeIncrement;
             end
         end
     end
+    usb.strobeEventWord(1);
     WaitSecs(holdTime);
     usb.stopRecording;
     Priority(0);
-    
-elseif Day==7
+elseif Day==21
     holdTime = 20;
     conditions = 3;
     waitTimes = ISI(1)+(ISI(2)-ISI(1)).*rand([conditions*repsPerBlock*blocks,1]);
